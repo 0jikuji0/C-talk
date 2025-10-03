@@ -17,66 +17,75 @@ void *receive_thread(void *server_fd);
 
 int main(int argc, char const *argv[])
 {
-    printf("Enter name:");
+    // ANSI color codes
+    const char *RED = "\033[1;31m";
+    const char *GREEN = "\033[1;32m";
+    const char *YELLOW = "\033[1;33m";
+    const char *CYAN = "\033[1;36m";
+    const char *RESET = "\033[0m";
+
+    printf("%s============================\n", CYAN);
+    printf("   Bienvenue sur C-Talk!\n");
+    printf("============================%s\n", RESET);
+    printf("Entrez votre nom: ");
     scanf("%s", name);
 
-    printf("Enter your port number:");
+    printf("Entrez votre numéro de port: ");
     scanf("%d", &PORT);
 
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     int k = 0;
 
-    // Creating socket file descriptor
+    // Création du socket
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        perror("socket failed");
+        printf("%sErreur: création du socket échouée%s\n", RED, RESET);
         exit(EXIT_FAILURE);
     }
-    // Forcefully attaching socket to the port
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
 
-    //Printed the server socket addr and port
-    printf("IP address is: %s\n", inet_ntoa(address.sin_addr));
-    printf("port is: %d\n", (int)ntohs(address.sin_port));
+    printf("%sAdresse IP: %s\n", YELLOW, inet_ntoa(address.sin_addr));
+    printf("Port: %d%s\n", (int)ntohs(address.sin_port), RESET);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
-        perror("bind failed");
+        printf("%sErreur: bind échoué%s\n", RED, RESET);
         exit(EXIT_FAILURE);
     }
     if (listen(server_fd, 5) < 0)
     {
-        perror("listen");
+        printf("%sErreur: listen échoué%s\n", RED, RESET);
         exit(EXIT_FAILURE);
     }
     int ch;
     pthread_t tid;
-    pthread_create(&tid, NULL, &receive_thread, &server_fd); //Creating thread to keep receiving message in real time
-    printf("\n*****At any point in time press the following:*****\n1.Send message\n0.Quit\n");
-    printf("\nEnter choice:");
-    do
-    {
+    pthread_create(&tid, NULL, &receive_thread, &server_fd);
 
+    do {
+        printf("%s\n========= MENU =========\n", CYAN);
+        printf("1. Envoyer un message\n");
+        printf("0. Quitter\n");
+        printf("========================%s\n", RESET);
+        printf("Votre choix: ");
         scanf("%d", &ch);
         switch (ch)
         {
-        case 1:
-            sending();
-            break;
-        case 0:
-            printf("\nLeaving\n");
-            break;
-        default:
-            printf("\nWrong choice\n");
+            case 1:
+                sending();
+                break;
+            case 0:
+                printf("%s\nDéconnexion... Au revoir!%s\n", GREEN, RESET);
+                break;
+            default:
+                printf("%s\nChoix invalide, réessayez.%s\n", RED, RESET);
         }
     } while (ch);
 
     close(server_fd);
-
     return 0;
 }
 
