@@ -1,0 +1,31 @@
+# === Build Artifacts ===
+*.o
+*.out
+*.exe
+*.obj
+*.elf
+*.bin
+*.map
+*.log
+
+# === Editor/IDE Files ===
+*.swp
+*.swo
+*.tmp
+*~
+.DS_Store
+.vscode/
+.idea/
+*.code-workspace
+
+# === Local Executables (not tracked) ===
+exec/*
+!exec/.gitkeep
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# === Git Keep Folders (optional) ===
+# (Allow empty folders to stay in Git)
+!*/*.gitkeep
