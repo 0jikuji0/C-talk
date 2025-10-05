@@ -1,6 +1,6 @@
 # C-talk Documentation
 
-Ce document décrit les conventions de style à suivre pour le projet **C-talk** en C, afin d'assurer la cohérence et la lisibilité du code.
+Cette première partie du document décrit les conventions de style à suivre pour le projet **C-talk** en C, afin d'assurer la cohérence et la lisibilité du code.
 
 ---
 
