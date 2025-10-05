@@ -1,4 +1,4 @@
-# Guide de Style pour C-talk
+# C-talk Documentation
 
 Ce document décrit les conventions de style à suivre pour le projet **C-talk** en C, afin d'assurer la cohérence et la lisibilité du code.
 
@@ -116,3 +116,98 @@ Ce document décrit les conventions de style à suivre pour le projet **C-talk**
       return -1;
   }
   ```
+
+---
+
+## 1. **Architecture Globale**
+
+### **Objectifs clés :**
+- Chaque machine doit pouvoir **envoyer** et **recevoir** des messages en même temps.
+- Gestion de plusieurs clients connectés (pour les discussions de groupe).
+- Code modulaire pour faciliter la maintenance et l’évolution.
+
+### **Composants principaux :**
+| Composant               | Rôle                                                                 |
+|-------------------------|----------------------------------------------------------------------|
+| **Serveur**             | Écoute les connexions entrantes et gère les messages reçus.         |
+| **Client**              | Se connecte à d’autres machines pour envoyer des messages.           |
+| **Gestionnaire de réseau** | Gère les sockets, les connexions et les communications.            |
+| **Interface utilisateur** | Affiche les messages et permet à l’utilisateur d’en envoyer.       |
+| **Gestion des utilisateurs** | Stocke les informations des utilisateurs connectés (optionnel).   |
+
+---
+
+## 2. **Détail des Modules**
+
+### **A. Module Serveur**
+- **Rôle** : Écouter sur un port spécifique et accepter les connexions entrantes.
+- **Fonctionnalités** :
+  - Créer une socket serveur.
+  - Accepter les connexions entrantes.
+  - Lancer un thread (ou processus) pour chaque client connecté.
+  - Recevoir les messages et les redistribuer aux autres clients connectés.
+
+### **B. Module Client**
+- **Rôle** : Se connecter à d’autres machines (serveurs) pour envoyer des messages.
+- **Fonctionnalités** :
+  - Créer une socket client.
+  - Se connecter à une adresse IP et un port spécifiques.
+  - Envoyer des messages à d’autres machines.
+
+### **C. Module Gestionnaire de Réseau**
+- **Rôle** : Centraliser la logique de communication (envoi/réception).
+- **Fonctionnalités** :
+  - Gérer les sockets (création, fermeture, erreurs).
+  - Envoyer et recevoir des messages via les sockets.
+  - Gérer les threads/processus pour les connexions simultanées.
+
+### **D. Module Interface Utilisateur**
+- **Rôle** : Permettre à l’utilisateur d’interagir avec l’application.
+- **Fonctionnalités** :
+  - Afficher les messages reçus.
+  - Permettre à l’utilisateur de saisir des messages à envoyer.
+  - (Optionnel) Interface en ligne de commande ou graphique (avec ncurses par exemple).
+
+### **E. Module Gestion des Utilisateurs**
+- **Rôle** : (Optionnel) Stocker les informations des utilisateurs connectés.
+- **Fonctionnalités** :
+  - Stocker les adresses IP et ports des utilisateurs connectés.
+  - Gérer les pseudos ou identifiants.
+
+---
+
+## 3. **Flux de Communication**
+
+1. **Lancement de l’application** :
+   - Le programme démarre en mode **serveur** (écoute sur un port).
+   - L’utilisateur peut également se connecter à d’autres machines en mode **client**.
+
+2. **Envoi de message** :
+   - L’utilisateur saisit un message.
+   - Le module client envoie le message à la machine cible.
+
+3. **Réception de message** :
+   - Le module serveur reçoit le message et l’affiche à l’utilisateur.
+
+4. **Gestion des connexions multiples** :
+   - Utilisation de threads ou de `fork()` pour gérer plusieurs clients simultanément.
+
+---
+
+## 4. **Exemple de Structure de Fichiers**
+
+```bash
+c-talk/
+├── include/
+│   ├── server.h
+│   ├── client.h
+│   ├── network.h
+│   └── ui.h
+├── src/
+│   ├── server.c
+│   ├── client.c
+│   ├── network.c
+│   └── ui.c
+├── Makefile
+└── README.md
+```
