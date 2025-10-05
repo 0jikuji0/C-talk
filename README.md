@@ -121,6 +121,8 @@ Cette première partie du document décrit les conventions de style à suivre po
 
 ## 1. **Architecture Globale**
 
+Cette deuxième partie du document décrit l'architecture globale de C-talk
+
 ### **Objectifs clés :**
 - Chaque machine doit pouvoir **envoyer** et **recevoir** des messages en même temps.
 - Gestion de plusieurs clients connectés (pour les discussions de groupe).
