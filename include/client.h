@@ -17,10 +17,19 @@
 #define C_TALK_CLIENT_H
 
 #include <stdint.h>
-#include <sys/socket.h>
 
-int connect_to_server(const char *ip, uint16_t port);
-void send_message_to_server(int socket, const char *message);
-void receive_messages_from_server(int socket);
+#define DEFAULT_CONNECTION_HOST "127.0.0.1"
+#define DEFAULT_LISTENING_PORT 31026
+#define DEFAULT_BUFFER_SIZE 1024
+
+typedef struct
+{
+    int socket_fd;
+} client_socket;
+
+client_socket initialize_client(uint16_t port, char * connection_host);
+void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer);
+int send_message_client(int socket_fd, char message[]);
+int close_client(client_socket client_socket);
 
 #endif // C_TALK_CLIENT_H

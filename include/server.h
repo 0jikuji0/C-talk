@@ -18,11 +18,19 @@
 
 #include <stdint.h>
 
-#define DEFAULT_PORT 8080
-#define MAX_CLIENTS 10
+#define DEFAULT_LISTENING_PORT 31026
+#define DEFAULT_PENDING_QUEUE_MAX_LENGHT 1
+#define DEFAULT_BUFFER_SIZE 1024
 
-int init_server(uint16_t port);
-void handle_incoming_connections(int server_socket);
-void broadcast_message(int *client_sockets, int sender_socket, const char *message);
+typedef struct
+{
+    int socket_fd;
+    int connected_socket_fd;
+} server_socket;
+
+server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length);
+void receive_message_server(int connected_socket_fd, uint32_t buffer_size, char *buffer);
+int send_message_server(int connected_socket_fd, char message[]);
+int close_server(server_socket server_socket);
 
 #endif // C_TALK_SERVER_H
