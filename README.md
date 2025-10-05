@@ -209,7 +209,8 @@ c-talk/
 │   ├── server.c
 │   ├── client.c
 │   ├── network.c
-│   └── ui.c
+│   ├── ui.c
+│   └──main.c
 ├── Makefile
 └── README.md
 ```
