@@ -103,11 +103,16 @@ Ce document décrit les conventions de style à suivre pour le projet **C-talk**
 ---
 
 ## 5. Gestion des Erreurs
-- Vérifiez toujours les valeurs de retour des appels système.
-- Utilisez `perror` pour afficher des messages d'erreur :
+
+- **Vérifiez toujours les valeurs de retour** des appels système (ex: `socket`, `bind`, `send`, `recv`).
+- **Utilisez `<errno.h>` et `strerror`** pour afficher des messages d'erreur détaillés et personnalisés.
+- **Exemple de base** :
   ```c
+  #include <errno.h>
+  #include <string.h>
+
   if (send(socket, message, strlen(message), 0) == -1) {
-      perror("Erreur lors de l'envoi du message");
+      fprintf(stderr, "Erreur lors de l'envoi du message : %s\n", strerror(errno));
       return -1;
   }
   ```
