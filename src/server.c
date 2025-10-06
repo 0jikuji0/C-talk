@@ -25,7 +25,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno)
+#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(1);
 
 server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length) {
 
@@ -37,7 +37,6 @@ server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length
     // Gestion des erreurs de la création d'initialisation du socket
     if (sockets.socket_fd == -1) {
         LOG_ERROR("Echec d'initialisation du socket");
-        exit(1);
     }
 
     // Configuration du socket
@@ -54,13 +53,11 @@ server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length
     // Gestion des erreurs de la liaison du socket
     if (bind_return_code == -1) {
         LOG_ERROR("Echec de la liaison pour le socket");
-        exit(1);
     }
 
     // Attente de nouvelles connexions avec gestion des erreurs
     if (listen(sockets.socket_fd, pending_queue_max_length) == -1) {
         LOG_ERROR("Echec de demarrage de l'ecoute des connexions entrantes");
-        exit(1);
     }
 
     puts("En attente de nouvelles connexions ...");
@@ -69,7 +66,6 @@ server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length
 
     if (sockets.connected_socket_fd == -1) {
         LOG_ERROR("Echec d'etablissement de la connexion");
-        exit(1);
     }
 
     return sockets;
@@ -80,7 +76,6 @@ void receive_message_server(int connected_socket_fd, uint32_t buffer_size, char 
 
     if (received_bytes == -1) {
         LOG_ERROR("Echec de la reception du message du client");
-        exit(1);
     }
 
     buffer[received_bytes] = '\0';
@@ -91,7 +86,6 @@ int send_message_server(int connected_socket_fd, char message[]) {
 
     if (send_bytes == -1) {
         LOG_ERROR("Echec de l'envoie du message au client");
-        exit(1);
     }
 
     return 0;
