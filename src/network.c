@@ -15,6 +15,7 @@
  */
 
 #include "../include/network.h"
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +28,38 @@
 #include <arpa/inet.h>
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] (RESEAU) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
+
+Socket NewSocket(int socket) {
+    Socket s;
+    s.socket = socket;
+    s.s_listen = &s_listen;
+    s.s_accept = &s_accept;
+    return s;
+}
+
+ClientSocket NewClientSocket(int socket, struct sockaddr_in address) {
+    ClientSocket client_socket;
+    client_socket.socket = socket;
+    client_socket.address = address;
+
+    return client_socket;
+}
+
+ServerSocket NewServerSocket(Socket listening_socket, ClientSocket client_socket) {
+    ServerSocket ss;
+    ss.listening_socket = listening_socket;
+    ss.client_socket = client_socket;
+    return ss;
+}
+
+void close_server_socket(ServerSocket sock) {
+    close(sock.listening_socket.socket);
+    close(sock.client_socket.socket);
+}
+
+void get_ip_str(struct sockaddr_in client_address, char* buff) {
+    inet_ntop(AF_INET, &(client_address.sin_addr), buff, INET_ADDRSTRLEN);
+}
 
 int init_socket(enum Mode mode){
     if (mode != TCP && mode != UDP) {
@@ -44,7 +77,7 @@ int init_socket(enum Mode mode){
 void param_socket(int socket) {
     int opt = 1;
     if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != 0) {
-    	printf("Echec de paramètrage: %s\n", strerror(errno));
+    	LOG_ERROR("Echec de paramètrage");
     }
 }
 
@@ -58,7 +91,7 @@ void attach_address(int socket, uint16_t port) {
     address.sin_port = htons(port);
 
     if (bind(socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
-    	printf("Echec d'attachement: %s\n", strerror(errno));
+        LOG_ERROR("Echec d'attachement: ");
     }
 }
 
@@ -67,11 +100,9 @@ Socket create_socket(enum Mode mode, uint16_t port) {
     param_socket(sock);
     attach_address(sock, port);
 
-    Socket s;
-    s.socket = sock;
-    s.s_listen = &s_listen;
-    s.s_accept = &s_accept;
-    return s;
+    printf("Socket crée\n");
+
+    return NewSocket(sock);
 }
 
 void s_listen(int socket) {
@@ -80,30 +111,29 @@ void s_listen(int socket) {
     if (err != 0) {
         printf("Echec de la mise en écoute: %s\n", strerror(errno));
     }
+    printf("J'écoute...\n");
 }
 
 ClientSocket s_accept(int socket) {
+    printf("Fonction s_accept\n");
     int client_sock;
     struct sockaddr_in client_address;
-    unsigned int addrLen = sizeof(client_address);
+    socklen_t addrLen = sizeof(client_address);
 
     client_sock = accept(socket, (struct sockaddr *) &client_address, &addrLen);
+    printf("Acceptation...\n");
     if (client_sock == -1) {
         LOG_ERROR("Acceptation ratée");
     }
 
     char ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(client_address.sin_addr), ip, INET_ADDRSTRLEN);
-    printf("Connexion de %s:%i\n", ip, client_address.sin_port);
+    get_ip_str(client_address, ip);
+    printf("Connexion de %s:%i\n", ip, ntohs(client_address.sin_port));
 
-    ClientSocket client_socket;
-    client_socket.socket = client_sock;
-    client_socket.address = client_address;
-
-    return client_socket;
+    return NewClientSocket(client_sock, client_address);
 }
 
-void send_message(int socket, const char *message) {
+int send_message(int socket, const char *message) {
     size_t len = strlen(message);
     ssize_t sent = send(socket, message, len, 0);
 
@@ -113,31 +143,37 @@ void send_message(int socket, const char *message) {
         fprintf(stderr, "[AVERTISSEMENT] Message partiellement envoyé (%zd/%zu octets)\n", sent, len);
         exit(EXIT_FAILURE);
     }
+
+    return 1;
 }
 
 char* receive_message(int socket) {
-    char buffer[1024];
-    ssize_t received = recv(socket, buffer, sizeof(buffer) - 1, 0);
+    char* buf_ptr = NULL;
+    assert((buf_ptr = (char* )malloc(MAX_BUFFER_SIZE)) != NULL);
+
+    ssize_t received = recv(socket, buf_ptr, MAX_BUFFER_SIZE - 1, 0);
 
     if (received == -1) {
+        free(buf_ptr);
         LOG_ERROR("Erreur lors de la réception du message.");
     } else if (received == 0) {
-        printf("Connexion fermée par l'interlocuteur");
+        printf("Connexion fermée par l'interlocuteur\n");
+        free(buf_ptr);
+        return NULL;
     }
 
-    buffer[received] = '\0';
-
-    // Incorrect
-    // Se servir de malloc (compliqué) vs mettre un buffer en argument de la fonction (embêtant)
-    return buffer;
+    buf_ptr[received] = '\0';
+    return buf_ptr;
 }
 
 
-int init_server(uint16_t port) {
+ServerSocket init_server(uint16_t port) {
     // Utilisation, pour l'instant, du port par défaut
-    Socket sock = create_socket(TCP, DEFAULT_PORT);
+    Socket sock = create_socket(TCP, port);
     sock.s_listen(sock.socket);
-    sock.s_accept(sock.socket);
+    ClientSocket sc = sock.s_accept(sock.socket);
 
-    return 1;
+    ServerSocket server_socket = NewServerSocket(sock, sc);
+
+    return server_socket;
 }

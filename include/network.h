@@ -49,6 +49,14 @@ typedef struct Socket {
     ClientSocket (*s_accept)(int);
 } Socket;
 
+typedef struct ServerSocket {
+    Socket listening_socket;
+    ClientSocket client_socket;
+} ServerSocket;
+
+// Création d'un struct
+Socket NewSocket(int socket);
+ClientSocket NewClientSocket(int socket, struct sockaddr_in address);
 
 // Utilisation de enum(Mode)
 Socket create_socket(enum Mode mode, uint16_t port);
@@ -62,8 +70,13 @@ int init_socket(enum Mode mode);
 void param_socket(int socket);
 void attach_address(int socket, uint16_t port);
 
-int init_server(uint16_t port);
-void send_message(int socket, const char *message);
+void close_server_socket(ServerSocket socket);
+
+ServerSocket init_server(uint16_t port);
+int send_message(int socket, const char *message);
 char* receive_message(int socket);
+
+// Fonctions utilitaires
+void get_ip_str(struct sockaddr_in client_address, char* buff);
 
 #endif // C_TALK_NETWORK_H
