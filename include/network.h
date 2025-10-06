@@ -17,6 +17,7 @@
 #ifndef C_TALK_NETWORK_H
 #define C_TALK_NETWORK_H
 
+#include <netinet/in.h>
 #include <stdint.h>
 #include <sys/socket.h>
 
@@ -37,21 +38,32 @@ enum Mode {
     UDP = SOCK_DGRAM
 };
 
-typedef struct NewSocket {
-    int e;
-} NewSocket;
+typedef struct ClientSocket {
+    int socket;
+    struct sockaddr_in address;
+} ClientSocket;
 
+typedef struct Socket {
+    int socket;
+    void (*s_listen)(int);
+    ClientSocket (*s_accept)(int);
+} Socket;
 
 
 // Utilisation de enum(Mode)
-int create_socket(enum Mode mode);
+Socket create_socket(enum Mode mode, uint16_t port);
 
+// Fonctions de sockets serveurs initialisés
+void s_listen(int socket);
+ClientSocket s_accept(int socket);
+
+// Initialisation de socket
 int init_socket(enum Mode mode);
 void param_socket(int socket);
-void attach_address(int socket);
+void attach_address(int socket, uint16_t port);
 
 int init_server(uint16_t port);
-int accept_client_connection(int server_socket);
 void send_message(int socket, const char *message);
+char* receive_message(int socket);
 
 #endif // C_TALK_NETWORK_H
