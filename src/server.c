@@ -25,7 +25,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(1);
+#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
 server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length) {
 
@@ -44,7 +44,7 @@ server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length
     socket_address.sin_family = AF_INET;
     socket_address.sin_port = port;
     socket_address.sin_addr.s_addr = INADDR_ANY;
-    
+
     int socket_address_length = sizeof(socket_address);
 
     // Liaison du socket

@@ -26,18 +26,16 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] %s : %s (code: %d)\n", (msg), strerror(errno), errno)
+#define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
 int init_socket(enum Mode mode){
     if (mode != TCP && mode != UDP) {
         LOG_ERROR("Mode socket non supporté");
-        exit(EXIT_FAILURE);
     }
 
     int sockfd = socket(AF_INET, mode, 0);
     if (sockfd == -1) {
         LOG_ERROR("Erreur lors de la création du socket");
-        exit(EXIT_FAILURE);
     }
 
     return sockfd;
@@ -47,7 +45,6 @@ void param_socket(int socket) {
     int opt = 1;
     if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != 0) {
     	printf("Echec de paramètrage: %s\n", strerror(errno));
-    	exit(EXIT_FAILURE);
     }
 }
 
@@ -62,7 +59,6 @@ void attach_address(int socket, uint16_t port) {
 
     if (bind(socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
     	printf("Echec d'attachement: %s\n", strerror(errno));
-    	exit(EXIT_FAILURE);
     }
 }
 
@@ -83,7 +79,6 @@ void s_listen(int socket) {
     int err = listen(socket, SOMAXCONN);
     if (err != 0) {
         printf("Echec de la mise en écoute: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
     }
 }
 
@@ -95,7 +90,6 @@ ClientSocket s_accept(int socket) {
     client_sock = accept(socket, (struct sockaddr *) &client_address, &addrLen);
     if (client_sock == -1) {
         LOG_ERROR("Acceptation ratée");
-        exit(EXIT_FAILURE);
     }
 
     char ip[INET_ADDRSTRLEN];
@@ -115,9 +109,9 @@ void send_message(int socket, const char *message) {
 
     if (sent == -1) {
         LOG_ERROR("Echec lors de l'envoi du message");
-        exit(EXIT_FAILURE);
     } else if (((size_t)sent < len)) {
         fprintf(stderr, "[AVERTISSEMENT] Message partiellement envoyé (%zd/%zu octets)\n", sent, len);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -127,7 +121,6 @@ char* receive_message(int socket) {
 
     if (received == -1) {
         LOG_ERROR("Erreur lors de la réception du message.");
-        exit(EXIT_FAILURE);
     } else if (received == 0) {
         printf("Connexion fermée par l'interlocuteur");
     }

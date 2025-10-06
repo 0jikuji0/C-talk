@@ -25,7 +25,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (CLIENT) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(1);
+#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (CLIENT) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
 client_socket initialize_client(uint16_t port, char * connection_host) {
 
@@ -49,7 +49,7 @@ client_socket initialize_client(uint16_t port, char * connection_host) {
     if (inet_return_code == -1) {
         LOG_ERROR("Adresse invalide");
     }
-    
+
     int socket_address_length = sizeof(socket_address);
     int connection_status = connect(sockets.socket_fd, (struct sockaddr *) &socket_address, socket_address_length);
 
@@ -62,7 +62,7 @@ client_socket initialize_client(uint16_t port, char * connection_host) {
 
 void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer) {
     int received_bytes = recv(socket_fd, buffer, buffer_size, 0);
-    
+
     if (received_bytes == -1) {
         LOG_ERROR("Echec de la reception du message du serveur");
     }
