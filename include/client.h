@@ -22,14 +22,14 @@
 #define DEFAULT_LISTENING_PORT 31026
 #define DEFAULT_BUFFER_SIZE 1024
 
-/** @brief Type représentant une socket client. */
+/** @brief Type représentant un socket client. */
 typedef struct
 {
     int socket_fd;
 } client_socket;
 
 /**
- * @brief Initialise une socket client et établit une connexion avec un serveur distant.
+ * @brief Initialise un socket client et établit une connexion avec un serveur distant.
  *
  * @param port Le numéro de port du serveur distant.
  * @param connection_host L'adresse IP du serveur distant.
@@ -43,7 +43,7 @@ typedef struct
 client_socket initialize_client(uint16_t port, char * connection_host);
 
 /**
- * @brief Reçoit un message depuis une socket client et le stocke dans un buffer.
+ * @brief Reçoit un message depuis un socket client et le stocke dans un buffer.
  *
  * @param socket_fd Descripteur de socket client.
  * @param buffer_size Taille maximale du buffer pour stocker le message.
@@ -58,7 +58,7 @@ client_socket initialize_client(uint16_t port, char * connection_host);
 void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer);
 
 /**
- * @brief Envoie un message via une socket client.
+ * @brief Envoie un message via un socket client.
  *
  * @param socket_fd Descripteur de socket client.
  * @param message Message à envoyer (chaîne de caractères).
@@ -72,7 +72,7 @@ void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer);
 int send_message_client(int socket_fd, char message[]);
 
 /**
- * @brief Ferme proprement une socket client et libère les ressources associées.
+ * @brief Ferme proprement un socket client et libère les ressources associées.
  *
  * @param client_socket Descripteur de socket client à fermer.
  * @return int 0 en cas de succès.
