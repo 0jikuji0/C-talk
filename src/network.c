@@ -67,10 +67,6 @@ void attach_address(int socket) {
 
 int create_socket(enum Mode mode) {
     int sock = init_socket(mode);
-    if (sock == -1) {
-        exit(EXIT_FAILURE);
-    }
-
     param_socket(sock);
     attach_address(sock);
 
