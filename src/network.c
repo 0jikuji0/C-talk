@@ -26,7 +26,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
+#define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] (RESEAU) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
 int init_socket(enum Mode mode){
     if (mode != TCP && mode != UDP) {
