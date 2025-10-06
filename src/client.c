@@ -25,7 +25,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (CLIENT) %s : %s (code: %d)\n", (msg), strerror(errno), errno)
+#define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (CLIENT) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(1);
 
 client_socket initialize_client(uint16_t port, char * connection_host) {
 
@@ -37,7 +37,6 @@ client_socket initialize_client(uint16_t port, char * connection_host) {
     // Gestion des erreurs de la création d'initialisation du socket
     if (sockets.socket_fd == -1) {
         LOG_ERROR("Echec d'initialisation du socket");
-        exit(1);
     }
 
     // Configuration du socket
@@ -49,7 +48,6 @@ client_socket initialize_client(uint16_t port, char * connection_host) {
 
     if (inet_return_code == -1) {
         LOG_ERROR("Adresse invalide");
-        exit(1);
     }
     
     int socket_address_length = sizeof(socket_address);
@@ -57,7 +55,6 @@ client_socket initialize_client(uint16_t port, char * connection_host) {
 
     if (connection_status == -1) {
         LOG_ERROR("Echec de la connexion au serveur");
-        exit(1);
     }
 
     return sockets;
@@ -68,7 +65,6 @@ void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer) {
     
     if (received_bytes == -1) {
         LOG_ERROR("Echec de la reception du message du serveur");
-        exit(1);
     }
 
     buffer[received_bytes] = '\0';
@@ -79,7 +75,6 @@ int send_message_client(int socket_fd, char message[]) {
 
     if (send_bytes == -1) {
         LOG_ERROR("Echec de l'envoie du message au serveur");
-        exit(1);
     }
 
     return 0;
