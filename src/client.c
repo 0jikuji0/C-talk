@@ -13,6 +13,7 @@
  * =============================================================================
  */
 
+#include "../include/network.h"
 #include "../include/client.h"
 #include <errno.h>
 #include <stdio.h>

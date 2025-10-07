@@ -33,42 +33,58 @@ typedef struct {
 } client_connection_t;
  */
 
+/** @brief Enum ayant pour but de simplifier les type de sockets utilisés. */
 enum Mode {
     TCP = SOCK_STREAM,
     UDP = SOCK_DGRAM
 };
 
-typedef struct ClientSocket {
+/** @brief Type représentant un socket et son adresse. */
+typedef struct {
     int socket;
-    struct sockaddr_in address;
-} ClientSocket;
-
-typedef struct Socket {
-    int socket;
-    void (*s_listen)(int);
-    ClientSocket (*s_accept)(int);
+    struct sockaddr_in* address;
 } Socket;
 
-typedef struct ServerSocket {
-    Socket listening_socket;
-    ClientSocket client_socket;
+/** @brief Type représentant un serveur de socket
+ *
+(1 qui écoute les nouvelles connexions, et 1 qui communique avec le client).
+*/
+typedef struct {
+    Socket listener;
+    Socket connection;
 } ServerSocket;
 
 // Création d'un struct
-Socket NewSocket(int socket);
-ClientSocket NewClientSocket(int socket, struct sockaddr_in address);
+
+/**
+ * @brief Crée un socket et le retourne.
+ *
+ * @param socket Descripteur de socket client.
+ * @param address Adresse du socket.
+ *
+ * @note En cas d'erreur, un message est affiché via `LOG_ERROR`.
+ *
+ * @example
+ *  int sockfd;
+ *  struct sockaddr_in address;
+ *  receive_message_client(sock, address);
+ */
+Socket newSocket(int socket, struct sockaddr_in address);
+
+
+ServerSocket newServerSocket(Socket listening_socket, Socket client_socket);
 
 // Utilisation de enum(Mode)
 Socket create_socket(enum Mode mode, uint16_t port);
 
 // Fonctions de sockets serveurs initialisés
 void s_listen(int socket);
-ClientSocket s_accept(int socket);
+Socket s_accept(int socket);
 
 // Initialisation de socket
 int init_socket(enum Mode mode);
 void param_socket(int socket);
-void attach_address(int socket, uint16_t port);
+struct sockaddr_in attach_address(int socket, uint16_t port);
 
 void close_server_socket(ServerSocket socket);
 

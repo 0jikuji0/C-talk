@@ -14,6 +14,7 @@
  */
 
 #include "../include/server.h"
+#include "../include/network.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -27,48 +28,15 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
-server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length) {
+ServerSocket init_server(uint16_t port) {
+    // Utilisation, pour l'instant, du port par défaut
+    Socket sock = create_socket(TCP, port);
+    sock.s_listen(sock.socket);
+    ClientSocket sc = sock.s_accept(sock.socket);
 
-    // Création du socket
-    server_socket sockets;
+    ServerSocket server_socket = newServerSocket(sock, sc);
 
-    sockets.socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    // Gestion des erreurs de la création d'initialisation du socket
-    if (sockets.socket_fd == -1) {
-        LOG_ERROR("Echec d'initialisation du socket");
-    }
-
-    // Configuration du socket
-    struct sockaddr_in socket_address;
-    socket_address.sin_family = AF_INET;
-    socket_address.sin_port = port;
-    socket_address.sin_addr.s_addr = INADDR_ANY;
-
-    int socket_address_length = sizeof(socket_address);
-
-    // Liaison du socket
-    int bind_return_code = bind(sockets.socket_fd, (struct sockaddr*) &socket_address, socket_address_length);
-
-    // Gestion des erreurs de la liaison du socket
-    if (bind_return_code == -1) {
-        LOG_ERROR("Echec de la liaison pour le socket");
-    }
-
-    // Attente de nouvelles connexions avec gestion des erreurs
-    if (listen(sockets.socket_fd, pending_queue_max_length) == -1) {
-        LOG_ERROR("Echec de demarrage de l'ecoute des connexions entrantes");
-    }
-
-    puts("En attente de nouvelles connexions ...");
-
-    sockets.connected_socket_fd = accept(sockets.socket_fd, (struct sockaddr*) &socket_address, (socklen_t *) &socket_address_length);
-
-    if (sockets.connected_socket_fd == -1) {
-        LOG_ERROR("Echec d'etablissement de la connexion");
-    }
-
-    return sockets;
+    return server_socket;
 }
 
 void receive_message_server(int connected_socket_fd, uint32_t buffer_size, char *buffer) {

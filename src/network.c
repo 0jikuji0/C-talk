@@ -29,32 +29,23 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] (RESEAU) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
-Socket NewSocket(int socket) {
+Socket newSocket(int socket, struct sockaddr_in address) {
     Socket s;
     s.socket = socket;
-    s.s_listen = &s_listen;
-    s.s_accept = &s_accept;
+    s.address = &address;
     return s;
 }
 
-ClientSocket NewClientSocket(int socket, struct sockaddr_in address) {
-    ClientSocket client_socket;
-    client_socket.socket = socket;
-    client_socket.address = address;
-
-    return client_socket;
-}
-
-ServerSocket NewServerSocket(Socket listening_socket, ClientSocket client_socket) {
+ServerSocket newServerSocket(Socket listening_socket, Socket client_socket) {
     ServerSocket ss;
-    ss.listening_socket = listening_socket;
-    ss.client_socket = client_socket;
+    ss.listener = listening_socket;
+    ss.connection = client_socket;
     return ss;
 }
 
 void close_server_socket(ServerSocket sock) {
-    close(sock.listening_socket.socket);
-    close(sock.client_socket.socket);
+    close(sock.listener.socket);
+    close(sock.connection.socket);
 }
 
 void get_ip_str(struct sockaddr_in client_address, char* buff) {
@@ -81,28 +72,30 @@ void param_socket(int socket) {
     }
 }
 
-void attach_address(int socket, uint16_t port) {
+struct sockaddr_in attach_address(int socket, uint16_t port) {
     struct sockaddr_in address;
 
     address.sin_family = AF_INET;
     // Ecoute sur toutes les adresses
     address.sin_addr.s_addr = INADDR_ANY;
     // Conversion du port en valeur réseaux (Host TO Network Short)
-    address.sin_port = htons(port);
+    address.sin_port = port;
 
     if (bind(socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
         LOG_ERROR("Echec d'attachement: ");
     }
+
+    return address;
 }
 
 Socket create_socket(enum Mode mode, uint16_t port) {
     int sock = init_socket(mode);
     param_socket(sock);
-    attach_address(sock, port);
+    struct sockaddr_in address = attach_address(sock, port);
 
     printf("Socket crée\n");
 
-    return NewSocket(sock);
+    return newSocket(sock, address);
 }
 
 void s_listen(int socket) {
@@ -114,13 +107,13 @@ void s_listen(int socket) {
     printf("J'écoute...\n");
 }
 
-ClientSocket s_accept(int socket) {
+Socket s_accept(int socket) {
     printf("Fonction s_accept\n");
     int client_sock;
     struct sockaddr_in client_address;
-    socklen_t addrLen = sizeof(client_address);
+    socklen_t addr_len = sizeof(client_address);
 
-    client_sock = accept(socket, (struct sockaddr *) &client_address, &addrLen);
+    client_sock = accept(socket, (struct sockaddr *) &client_address, (socklen_t *)&addr_len);
     printf("Acceptation...\n");
     if (client_sock == -1) {
         LOG_ERROR("Acceptation ratée");
@@ -130,7 +123,7 @@ ClientSocket s_accept(int socket) {
     get_ip_str(client_address, ip);
     printf("Connexion de %s:%i\n", ip, ntohs(client_address.sin_port));
 
-    return NewClientSocket(client_sock, client_address);
+    return newSocket(client_sock, client_address);
 }
 
 int send_message(int socket, const char *message) {
@@ -170,10 +163,10 @@ char* receive_message(int socket) {
 ServerSocket init_server(uint16_t port) {
     // Utilisation, pour l'instant, du port par défaut
     Socket sock = create_socket(TCP, port);
-    sock.s_listen(sock.socket);
-    ClientSocket sc = sock.s_accept(sock.socket);
+    s_listen(sock.socket);
+    Socket client_sock = s_accept(sock.socket);
 
-    ServerSocket server_socket = NewServerSocket(sock, sc);
+    ServerSocket server_socket = newServerSocket(sock, client_sock);
 
     return server_socket;
 }

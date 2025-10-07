@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() {
+int main(int argc, char* argv[]) {
 
-    char value;
+    if (argc < 2) {
+        printf("Veuillez spécifier le mode du programme ([S]erveur ou [C]lient)");
+        return 0;
+    }
 
-    printf("Serveur ou client ? [s/c] : ");
-    scanf("%c", &value);
+    char value = argv[1][0];
 
     if (value == 'c')
     {
@@ -34,7 +36,8 @@ int main() {
 
         ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
 
-        char* message = receive_message(s_sock.client_socket.socket);
+
+        char* message = receive_message(s_sock.connection.socket);
         if (message) {
             printf("Message reçu: %s\n", message);
             free(message);
