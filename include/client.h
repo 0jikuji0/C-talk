@@ -16,17 +16,12 @@
 #ifndef C_TALK_CLIENT_H
 #define C_TALK_CLIENT_H
 
+#include "network.h"
 #include <stdint.h>
 
 #define DEFAULT_CONNECTION_HOST "127.0.0.1"
 #define DEFAULT_LISTENING_PORT 31026
 #define DEFAULT_BUFFER_SIZE 1024
-
-/** @brief Type représentant un socket client. */
-typedef struct
-{
-    int socket_fd;
-} client_socket;
 
 /**
  * @brief Initialise un socket client et établit une connexion avec un serveur distant.
@@ -40,7 +35,7 @@ typedef struct
  * @example
  *     client_socket sock = initialize_client(8080, "127.0.0.1");
  */
-client_socket initialize_client(uint16_t port, char * connection_host);
+Socket initialize_client(uint16_t port, char * connection_host);
 
 /**
  * @brief Reçoit un message depuis un socket client et le stocke dans un buffer.
@@ -82,6 +77,6 @@ int send_message_client(int socket_fd, char message[]);
  * @example
  *     int result = close_client(sock);
  */
-int close_client(client_socket client_socket);
+int close_client(Socket client_socket);
 
 #endif // C_TALK_CLIENT_H

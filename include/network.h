@@ -86,6 +86,8 @@ int init_socket(enum Mode mode);
 void param_socket(int socket);
 struct sockaddr_in attach_address(int socket, uint16_t port);
 
+// Fermeture de socket
+int close_socket(Socket socket);
 void close_server_socket(ServerSocket socket);
 
 ServerSocket init_server(uint16_t port);

@@ -28,17 +28,9 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (CLIENT) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
-client_socket initialize_client(uint16_t port, char * connection_host) {
+Socket initialize_client(uint16_t port, char * connection_host) {
 
-    // Création du socket
-    client_socket sockets;
-
-    sockets.socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    // Gestion des erreurs de la création d'initialisation du socket
-    if (sockets.socket_fd == -1) {
-        LOG_ERROR("Echec d'initialisation du socket");
-    }
+    int sock = init_socket(TCP);
 
     // Configuration du socket
     struct sockaddr_in socket_address;
@@ -51,14 +43,16 @@ client_socket initialize_client(uint16_t port, char * connection_host) {
         LOG_ERROR("Adresse invalide");
     }
 
+    Socket socket = newSocket(sock, socket_address);
+
     int socket_address_length = sizeof(socket_address);
-    int connection_status = connect(sockets.socket_fd, (struct sockaddr *) &socket_address, socket_address_length);
+    int connection_status = connect(socket.socket, (struct sockaddr *) &socket_address, socket_address_length);
 
     if (connection_status == -1) {
         LOG_ERROR("Echec de la connexion au serveur");
     }
 
-    return sockets;
+    return socket;
 }
 
 void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer) {
@@ -81,8 +75,8 @@ int send_message_client(int socket_fd, char message[]) {
     return 0;
 }
 
-int close_client(client_socket client_socket) {
-    close(client_socket.socket_fd);
+int close_client(Socket client_socket) {
+    close(client_socket.socket);
 
     return 0;
 }

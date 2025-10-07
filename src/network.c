@@ -43,6 +43,11 @@ ServerSocket newServerSocket(Socket listening_socket, Socket client_socket) {
     return ss;
 }
 
+int close_socket(Socket socket) {
+    close(socket.socket);
+    return 0;
+}
+
 void close_server_socket(ServerSocket sock) {
     close(sock.listener.socket);
     close(sock.connection.socket);

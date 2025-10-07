@@ -15,11 +15,11 @@ int main(int argc, char* argv[]) {
 
     if (value == 'c')
     {
-        client_socket sockets = initialize_client(DEFAULT_LISTENING_PORT, DEFAULT_CONNECTION_HOST);
+        Socket socket = initialize_client(DEFAULT_LISTENING_PORT, DEFAULT_CONNECTION_HOST);
 
-        send_message_client(sockets.socket_fd, "coucou\n");
+        send_message_client(socket.socket, "coucou\n");
 
-        close_client(sockets);
+        close_socket(socket);
     }
 
     if (value == 's')
