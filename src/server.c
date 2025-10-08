@@ -31,22 +31,22 @@
 ServerSocket init_server(uint16_t port) {
     // Utilisation, pour l'instant, du port par défaut
     Socket sock = create_socket(TCP, port);
-    sock.s_listen(sock.socket);
-    ClientSocket sc = sock.s_accept(sock.socket);
+    s_listen(sock.socket);
+    Socket client_sock = s_accept(sock.socket);
 
-    ServerSocket server_socket = newServerSocket(sock, sc);
+    ServerSocket server_socket = newServerSocket(sock, client_sock);
 
     return server_socket;
 }
 
-void receive_message_server(int connected_socket_fd, uint32_t buffer_size, char *buffer) {
-    int received_bytes = recv(connected_socket_fd, buffer, buffer_size, 0);
+char* receive_message_server(int connected_socket_fd) {
+    char* message_ptr = receive_message(connected_socket_fd);
 
-    if (received_bytes == -1) {
+    if (message_ptr == NULL) {
         LOG_ERROR("Echec de la reception du message du client");
     }
 
-    buffer[received_bytes] = '\0';
+    return message_ptr;
 }
 
 int send_message_server(int connected_socket_fd, char message[]) {
@@ -59,9 +59,7 @@ int send_message_server(int connected_socket_fd, char message[]) {
     return 0;
 }
 
-int close_server(server_socket server_socket) {
-    close(server_socket.socket_fd);
-    close(server_socket.connected_socket_fd);
-
+int close_server(ServerSocket socket) {
+    close_server_socket(socket);
     return 0;
 }

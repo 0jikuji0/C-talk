@@ -16,6 +16,7 @@
 #ifndef C_TALK_SERVER_H
 #define C_TALK_SERVER_H
 
+#include "network.h"
 #include <stdint.h>
 
 #define DEFAULT_LISTENING_PORT 31026
@@ -48,16 +49,13 @@ server_socket initialize_server(uint16_t port, uint16_t pending_queue_max_length
  * @brief Reçoit un message depuis un socket connectée (client) et le stocke dans un buffer.
  *
  * @param connected_socket_fd Descripteur de socket connectée (client).
- * @param buffer_size Taille maximale du buffer pour stocker le message.
- * @param buffer Buffer où stocker le message reçu.
  *
  * @note En cas d'erreur, un message est affiché via `LOG_ERROR`.
  *
  * @example
- *     char buffer[1024];
- *     receive_message_server(server.connected_socket_fd, 1024, buffer);
+ *     char* msg_ptr = receive_message_server(server.connected_socket_fd);
  */
-void receive_message_server(int connected_socket_fd, uint32_t buffer_size, char *buffer);
+char* receive_message_server(int connected_socket_fd);
 
 /**
  * @brief Envoie un message via un socket connectée (client).
@@ -84,6 +82,6 @@ int send_message_server(int connected_socket_fd, char message[]);
  * @example
  *     int result = close_server(server_socket);
  */
-int close_server(server_socket server_socket);
+int close_server(ServerSocket socket);
 
 #endif // C_TALK_SERVER_H

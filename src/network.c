@@ -163,15 +163,3 @@ char* receive_message(int socket) {
     buf_ptr[received] = '\0';
     return buf_ptr;
 }
-
-
-ServerSocket init_server(uint16_t port) {
-    // Utilisation, pour l'instant, du port par défaut
-    Socket sock = create_socket(TCP, port);
-    s_listen(sock.socket);
-    Socket client_sock = s_accept(sock.socket);
-
-    ServerSocket server_socket = newServerSocket(sock, client_sock);
-
-    return server_socket;
-}

@@ -1,6 +1,5 @@
-#include "../include/server.h"
 #include "../include/client.h"
-#include "../include/network.h"
+#include "../include/server.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -37,13 +36,13 @@ int main(int argc, char* argv[]) {
         ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
 
 
-        char* message = receive_message(s_sock.connection.socket);
+        char* message = receive_message_server(s_sock.connection.socket);
         if (message) {
             printf("Message reçu: %s\n", message);
             free(message);
         }
 
-        close_server_socket(s_sock);
+        close_server(s_sock);
     }
 
 }
