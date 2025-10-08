@@ -65,16 +65,34 @@ typedef struct {
  * @note En cas d'erreur, un message est affiché via `LOG_ERROR`.
  *
  * @example
- *  int sockfd;
- *  struct sockaddr_in address;
- *  receive_message_client(sock, address);
+ *  Socket my_socket = newSocket(socketfd, address);
  */
 Socket newSocket(int socket, struct sockaddr_in address);
 
-
+/**
+ * @brief Crée un struct ServerSocket et le retourne.
+ *
+ * @param Socket listener qui écoute les nouvelles connexions.
+ * @param Socket connection qui est le socket de la connexion établie entre le client et le serveur.
+ *
+ * @note En cas d'erreur, un message est affiché via `LOG_ERROR`.
+ *
+ * @example
+ * ServerSocket my_server_socket = newServerSocket(listener, connection);
+ */
 ServerSocket newServerSocket(Socket listening_socket, Socket client_socket);
 
-// Utilisation de enum(Mode)
+/**
+ * @brief Initie un descripteur de fichier socket et retourne un struct Socket.
+ *
+ * @param Mode mode le mode de transmission de données (TCP, UDP).
+ * @param uint16_t port le port que le socket écoute.
+ *
+ * @note En cas d'erreur, un message est affiché via `LOG_ERROR`.
+ *
+ * @example
+ * Socket my_socket = create_socket(UDP, 42069);
+ */
 Socket create_socket(enum Mode mode, uint16_t port);
 
 // Fonctions de sockets serveurs initialisés
