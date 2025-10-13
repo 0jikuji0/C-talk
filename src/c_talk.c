@@ -1,5 +1,6 @@
 #include "../include/client.h"
 #include "../include/server.h"
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,6 +18,24 @@ int main(int argc, char* argv[]) {
         Socket socket = initialize_client(DEFAULT_LISTENING_PORT, DEFAULT_CONNECTION_HOST);
 
         send_message_client(socket.socket, "coucou\n");
+
+        for (;;) {
+            char buffer[256];
+            printf("Votre message: ");
+            fflush(stdout);
+
+            if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+                break; // EOF ou erreur
+            }
+
+            buffer[strcspn(buffer, "\n")] = '\0';
+
+            if (strlen(buffer) > 0) {
+                send_message_client(socket.socket, buffer);
+            } else {
+                break;
+            }
+        }
 
         close_socket(socket);
     }
@@ -40,6 +59,14 @@ int main(int argc, char* argv[]) {
         if (message) {
             printf("Message reçu: %s\n", message);
             free(message);
+        }
+
+        for (;;) {
+            char* message = receive_message_server(s_sock.connection.socket);
+            if (message) {
+                printf("Message reçu: %s\n", message);
+                free(message);
+            }
         }
 
         close_server(s_sock);
