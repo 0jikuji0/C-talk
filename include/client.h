@@ -21,7 +21,7 @@
 
 #define DEFAULT_CONNECTION_HOST "127.0.0.1"
 #define DEFAULT_LISTENING_PORT 31026
-#define DEFAULT_BUFFER_SIZE 1024
+#define MAX_BUFFER_SIZE 1024
 
 /**
  * @brief Initialise un socket client et établit une connexion avec un serveur distant.
@@ -65,6 +65,22 @@ void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer);
  *     int result = send_message_client(sock, "Bonjour, monde !");
  */
 int send_message_client(int socket_fd, char message[]);
+
+/**
+ * @brief Récupère les caractères écrits dans STDIN et renvoie un pointeur vers la chaîne de caractère
+ *
+ * @return char* Chaîne de caractère. Si rien n'est reçu, retourne NULL.
+ *
+ *
+ * @example
+ *     char* message = get_message();
+ *     // Utilisation de message
+ *
+ *     // Libération de la mémoire de message
+ *     free(message);
+ *     message = NULL;
+ */
+char* get_message();
 
 /**
  * @brief Ferme proprement un socket client et libère les ressources associées.

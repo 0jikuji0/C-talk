@@ -15,6 +15,8 @@
 
 #include "../include/network.h"
 #include "../include/client.h"
+
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,6 +75,26 @@ int send_message_client(int socket_fd, char message[]) {
     }
 
     return 0;
+}
+
+char* get_message() {
+    char* buffer;
+
+    assert((buffer = malloc(MAX_BUFFER_SIZE * sizeof(char))) != NULL);
+
+    if (fgets(buffer, MAX_BUFFER_SIZE, stdin) == NULL) {
+        free(buffer);
+        return NULL;
+    }
+
+    buffer[strcspn(buffer, "\n")] = '\0';
+
+    if (strlen(buffer) > 0) {
+        return buffer;
+    }
+
+    free(buffer);
+    return NULL;
 }
 
 int close_client(Socket client_socket) {

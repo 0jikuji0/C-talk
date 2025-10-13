@@ -20,21 +20,17 @@ int main(int argc, char* argv[]) {
         send_message_client(socket.socket, "coucou\n");
 
         for (;;) {
-            char buffer[256];
             printf("Votre message: ");
-            fflush(stdout);
+            fflush(stdin);
 
-            if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
-                break; // EOF ou erreur
+            char* message = get_message();
+
+            if (message != NULL) {
+                send_message_client(socket.socket, message);
             }
 
-            buffer[strcspn(buffer, "\n")] = '\0';
-
-            if (strlen(buffer) > 0) {
-                send_message_client(socket.socket, buffer);
-            } else {
-                break;
-            }
+            free(message);
+            message = NULL;
         }
 
         close_socket(socket);
@@ -66,6 +62,7 @@ int main(int argc, char* argv[]) {
             if (message) {
                 printf("Message reçu: %s\n", message);
                 free(message);
+                message = NULL;
             }
         }
 
