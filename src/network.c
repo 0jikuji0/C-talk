@@ -36,21 +36,21 @@ Socket newSocket(int socket, struct sockaddr_in address) {
     return s;
 }
 
-ServerSocket newServerSocket(Socket listening_socket, Socket client_socket) {
+ServerSocket newServerSocket(Socket* listening_socket, Socket* client_socket) {
     ServerSocket ss;
-    ss.listener = listening_socket;
-    ss.connection = client_socket;
+    ss.listener = *listening_socket;
+    ss.connection = *client_socket;
     return ss;
 }
 
-int close_socket(Socket socket) {
-    close(socket.socket);
+int close_socket(Socket* socket) {
+    close(socket->socket);
     return 0;
 }
 
-void close_server_socket(ServerSocket sock) {
-    close(sock.listener.socket);
-    close(sock.connection.socket);
+void close_server_socket(ServerSocket* sock) {
+    close(sock->listener.socket);
+    close(sock->connection.socket);
 }
 
 void get_ip_str(struct sockaddr_in client_address, char* buff) {

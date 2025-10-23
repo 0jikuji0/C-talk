@@ -34,7 +34,7 @@ ServerSocket init_server(uint16_t port) {
     s_listen(sock.socket);
     Socket client_sock = s_accept(sock.socket);
 
-    ServerSocket server_socket = newServerSocket(sock, client_sock);
+    ServerSocket server_socket = newServerSocket(&sock, &client_sock);
 
     return server_socket;
 }
@@ -60,6 +60,6 @@ int send_message_server(int connected_socket_fd, char message[]) {
 }
 
 int close_server(ServerSocket socket) {
-    close_server_socket(socket);
+    close_server_socket(&socket);
     return 0;
 }

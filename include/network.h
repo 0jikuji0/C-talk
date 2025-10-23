@@ -80,7 +80,7 @@ Socket newSocket(int socket, struct sockaddr_in address);
  * @example
  * ServerSocket my_server_socket = newServerSocket(listener, connection);
  */
-ServerSocket newServerSocket(Socket listening_socket, Socket client_socket);
+ServerSocket newServerSocket(Socket* listening_socket, Socket* client_socket);
 
 /**
  * @brief Initie un descripteur de fichier socket et retourne un struct Socket.
@@ -105,8 +105,8 @@ void param_socket(int socket);
 struct sockaddr_in attach_address(int socket, uint16_t port);
 
 // Fermeture de socket
-int close_socket(Socket socket);
-void close_server_socket(ServerSocket socket);
+int close_socket(Socket* socket);
+void close_server_socket(ServerSocket* socket);
 
 ServerSocket init_server(uint16_t port);
 int send_message(int socket, const char *message);

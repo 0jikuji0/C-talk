@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
 
         for (;;) {
             printf("Votre message: ");
-            fflush(stdin);
 
             char* message = get_message();
 
