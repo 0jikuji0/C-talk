@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
             message = NULL;
         }
 
-        close_socket(socket);
+        close_socket(&socket);
     }
 
     if (value == 's')

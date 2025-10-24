@@ -35,11 +35,12 @@ Socket initialize_client(uint16_t port, char * connection_host) {
     int sock = init_socket(TCP);
 
     // Configuration du socket
-    struct sockaddr_in socket_address;
-    socket_address.sin_family = AF_INET;
-    socket_address.sin_port = port;
+    struct sockaddr_in* socket_address;
+    assert((socket_address = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in)))!= NULL);
+    socket_address->sin_family = AF_INET;
+    socket_address->sin_port = port;
 
-    int inet_return_code = inet_pton(AF_INET, connection_host, &socket_address.sin_addr);
+    int inet_return_code = inet_pton(AF_INET, connection_host, &socket_address->sin_addr);
 
     if (inet_return_code == -1) {
         LOG_ERROR("Adresse invalide");
@@ -47,8 +48,8 @@ Socket initialize_client(uint16_t port, char * connection_host) {
 
     Socket socket = newSocket(sock, socket_address);
 
-    int socket_address_length = sizeof(socket_address);
-    int connection_status = connect(socket.socket, (struct sockaddr *) &socket_address, socket_address_length);
+    int socket_address_length = sizeof(*socket_address);
+    int connection_status = connect(socket.socket, (struct sockaddr *) socket_address, socket_address_length);
 
     if (connection_status == -1) {
         LOG_ERROR("Echec de la connexion au serveur");

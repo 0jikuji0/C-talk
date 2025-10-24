@@ -60,14 +60,14 @@ typedef struct {
  * @brief Crée un socket et le retourne.
  *
  * @param socket Descripteur de socket client.
- * @param address Adresse du socket.
+ * @param address* Pointeur vers l'adresse du socket.
  *
  * @note En cas d'erreur, un message est affiché via `LOG_ERROR`.
  *
  * @example
- *  Socket my_socket = newSocket(socketfd, address);
+ *  Socket my_socket = newSocket(socketfd, *address);
  */
-Socket newSocket(int socket, struct sockaddr_in address);
+Socket newSocket(int socket, struct sockaddr_in* address);
 
 /**
  * @brief Crée un struct ServerSocket et le retourne.
@@ -102,7 +102,7 @@ Socket s_accept(int socket);
 // Initialisation de socket
 int init_socket(enum Mode mode);
 void param_socket(int socket);
-struct sockaddr_in attach_address(int socket, uint16_t port);
+struct sockaddr_in* attach_address(int socket, uint16_t port);
 
 // Fermeture de socket
 int close_socket(Socket* socket);

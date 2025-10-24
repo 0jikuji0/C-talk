@@ -29,10 +29,10 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERREUR] (RESEAU) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
-Socket newSocket(int socket, struct sockaddr_in address) {
+Socket newSocket(int socket, struct sockaddr_in* address) {
     Socket s;
     s.socket = socket;
-    s.address = &address;
+    s.address = address;
     return s;
 }
 
@@ -72,21 +72,22 @@ int init_socket(enum Mode mode){
 
 void param_socket(int socket) {
     int opt = 1;
-    if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != 0) {
+    if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) != 0) {
     	LOG_ERROR("Echec de paramètrage");
     }
 }
 
-struct sockaddr_in attach_address(int socket, uint16_t port) {
-    struct sockaddr_in address;
+struct sockaddr_in* attach_address(int socket, uint16_t port) {
+    struct sockaddr_in* address;
+    assert((address = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in))) != NULL);
 
-    address.sin_family = AF_INET;
+    address->sin_family = AF_INET;
     // Ecoute sur toutes les adresses
-    address.sin_addr.s_addr = INADDR_ANY;
+    address->sin_addr.s_addr = INADDR_ANY;
     // Conversion du port en valeur réseaux (Host TO Network Short)
-    address.sin_port = port;
+    address->sin_port = port;
 
-    if (bind(socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
+    if (bind(socket, (struct sockaddr *) address, sizeof(*address)) != 0) {
         LOG_ERROR("Echec d'attachement: ");
     }
 
@@ -96,7 +97,7 @@ struct sockaddr_in attach_address(int socket, uint16_t port) {
 Socket create_socket(enum Mode mode, uint16_t port) {
     int sock = init_socket(mode);
     param_socket(sock);
-    struct sockaddr_in address = attach_address(sock, port);
+    struct sockaddr_in* address = attach_address(sock, port);
 
     printf("Socket crée\n");
 
@@ -128,7 +129,7 @@ Socket s_accept(int socket) {
     get_ip_str(client_address, ip);
     printf("Connexion de %s:%i\n", ip, ntohs(client_address.sin_port));
 
-    return newSocket(client_sock, client_address);
+    return newSocket(client_sock, &client_address);
 }
 
 int send_message(int socket, const char *message) {
