@@ -95,6 +95,9 @@ ServerSocket newServerSocket(Socket* listening_socket, Socket* client_socket);
  */
 Socket create_socket(enum Mode mode, uint16_t port);
 
+// Libération de socket
+void free_socket(Socket socket);
+
 // Fonctions de sockets serveurs initialisés
 void s_listen(int socket);
 Socket s_accept(int socket);
@@ -105,7 +108,7 @@ void param_socket(int socket);
 struct sockaddr_in* attach_address(int socket, uint16_t port);
 
 // Fermeture de socket
-int close_socket(Socket* socket);
+int close_socket(Socket socket);
 void close_server_socket(ServerSocket* socket);
 
 ServerSocket init_server(uint16_t port);

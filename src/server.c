@@ -31,8 +31,13 @@
 ServerSocket init_server(uint16_t port) {
     // Utilisation, pour l'instant, du port par défaut
     Socket sock = create_socket(TCP, port);
+
+    // TODO créer un thread afin que ça ne bloque pas le programme.
+    // Modifier le comportement pour supporter le multi-threading ?
     s_listen(sock.socket);
     Socket client_sock = s_accept(sock.socket);
+
+    // TODO socket UDP pour signaler la room
 
     ServerSocket server_socket = newServerSocket(&sock, &client_sock);
 
@@ -62,4 +67,9 @@ int send_message_server(int connected_socket_fd, char message[]) {
 int close_server(ServerSocket socket) {
     close_server_socket(&socket);
     return 0;
+}
+
+int free_server(ServerSocket server_socket) {
+    free_socket(server_socket.connection);
+    free_socket(server_socket.listener);
 }

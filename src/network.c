@@ -43,14 +43,14 @@ ServerSocket newServerSocket(Socket* listening_socket, Socket* client_socket) {
     return ss;
 }
 
-int close_socket(Socket* socket) {
-    close(socket->socket);
+int close_socket(Socket socket) {
+    close(socket.socket);
     return 0;
 }
 
 void close_server_socket(ServerSocket* sock) {
-    close(sock->listener.socket);
-    close(sock->connection.socket);
+    close_socket(sock->connection);
+    close_socket(sock->listener);
 }
 
 void get_ip_str(struct sockaddr_in client_address, char* buff) {
@@ -163,4 +163,9 @@ char* receive_message(int socket) {
 
     buf_ptr[received] = '\0';
     return buf_ptr;
+}
+
+void free_socket(Socket socket) {
+    free(socket.address);
+    socket.address = NULL;
 }

@@ -24,15 +24,21 @@ int main(int argc, char* argv[]) {
 
             char* message = get_message();
 
-            if (message != NULL) {
-                send_message_client(socket.socket, message);
+            if (message == NULL) {
+                free(message);
+                continue;
             }
 
-            free(message);
-            message = NULL;
+            if (strcmp(message, "/exit") == 0) {
+                free(message);
+                message = NULL;
+                break;
+            }
+            send_message_client(socket.socket, message);
         }
 
-        close_socket(&socket);
+        close_socket(socket);
+        free_socket(socket);
     }
 
     if (value == 's')
@@ -66,6 +72,7 @@ int main(int argc, char* argv[]) {
         }
 
         close_server(s_sock);
+        free_server(s_sock);
     }
 
 }
