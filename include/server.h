@@ -84,4 +84,6 @@ int send_message_server(int connected_socket_fd, char message[]);
  */
 int close_server(ServerSocket socket);
 
+int free_server(ServerSocket server_socket);
+
 #endif // C_TALK_SERVER_H
