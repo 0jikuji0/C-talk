@@ -18,7 +18,8 @@ TARGET := $(BUILD_DIR)/b.out
 SRC := $(SRC_DIR)/c_talk.c \
        $(SRC_DIR)/network.c \
        $(SRC_DIR)/client.c \
-       $(SRC_DIR)/server.c
+       $(SRC_DIR)/server.c \
+	   $(SRC_DIR)/crypto.c
 
 # Object files (in build/)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)

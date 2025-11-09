@@ -1,5 +1,7 @@
 #include "../include/client.h"
 #include "../include/server.h"
+#include "../include/crypto.h"
+#include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +19,26 @@ int main(int argc, char* argv[]) {
     {
         Socket socket = initialize_client(DEFAULT_LISTENING_PORT, DEFAULT_CONNECTION_HOST);
 
-        send_message_client(socket.socket, "coucou\n");
+        // génération des clés
+
+        uint64_t p, g, secret_key, public_key, private_key;
+        publicParams(&p, &g);
+        privateParams(&secret_key);
+
+        public_key = publicKey(p, g, secret_key);
+
+        private_key = privateKey(p, public_key, secret_key);
+
+        char * ciphertext = NULL;
+
+        const char * plaintext = "coucou";
+
+        encrypt(plaintext, &ciphertext, private_key);
+
+        send_message_client(socket.socket, ciphertext);
+
+        free(ciphertext);
+
 
         for (;;) {
             printf("Votre message: ");
@@ -34,7 +55,11 @@ int main(int argc, char* argv[]) {
                 message = NULL;
                 break;
             }
-            send_message_client(socket.socket, message);
+
+            encrypt(plaintext, &ciphertext, private_key);
+            send_message_client(socket.socket, ciphertext);
+            free(ciphertext);
+            ciphertext = NULL;
         }
 
         close_socket(socket);
@@ -55,6 +80,24 @@ int main(int argc, char* argv[]) {
 
         ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
 
+        size_t p, g, secret_key, public_key, private_key;
+        size_t r;
+        publicParams(&p, &g);
+        privateParams(&secret_key);
+
+        // soit secret_key_c la clé secrète du client et secret_key_s la clé sercrète du serveur
+        // échanger p et g
+        exchange_primes(s_sock.connection.socket);
+
+        // public_key = échanger le résultat r de (g^secret_key_s) % p
+        r = publicKey(p, g, secret_key);
+
+        // public_key du client
+        public_key = exchange_public_keys(s_sock.connection.socket, r);
+
+        // (r ^ secret_key_s) % p
+        // private_key = On a donc (g ^ secret_key_c * secret_key_s) % p
+        private_key = privateKey(p, public_key, secret_key);
 
         char* message = receive_message_server(s_sock.connection.socket);
         if (message) {
@@ -69,6 +112,9 @@ int main(int argc, char* argv[]) {
                 free(message);
                 message = NULL;
             }
+
+            char* decrypted_message = NULL;
+            decrypt(message, &decrypted_message, private_key);
         }
 
         close_server(s_sock);
@@ -76,3 +122,20 @@ int main(int argc, char* argv[]) {
     }
 
 }
+
+
+/*
+
+Server -| Client 1
+
+Client 1 | Client 2 | Client 3
+
+Server -> Client 1 clé
+
+Server -> Client 2 clé
+-> Client 1 clé
+-> Client 3 clé
+
+Message reçu: houcou
+
+*/

@@ -69,7 +69,7 @@ int close_server(ServerSocket socket) {
     return 0;
 }
 
-int free_server(ServerSocket server_socket) {
+void free_server(ServerSocket server_socket) {
     free_socket(server_socket.connection);
     free_socket(server_socket.listener);
 }
