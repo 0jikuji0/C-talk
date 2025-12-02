@@ -4,7 +4,7 @@
 
 # Compiler and flags
 CC      := gcc
-CFLAGS  := -Werror -std=c99 -I include
+CFLAGS  := -Wall -Wextra -Werror -std=c99 -I include
 LDFLAGS :=
 
 # Directories
@@ -19,8 +19,7 @@ SRC := $(SRC_DIR)/c_talk.c \
        $(SRC_DIR)/network.c \
        $(SRC_DIR)/client.c \
        $(SRC_DIR)/server.c \
-	   $(SRC_DIR)/crypto.c \
-	   $(SRC_DIR)/threads.c
+	   $(SRC_DIR)/crypto.c
 
 # Object files (in build/)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)

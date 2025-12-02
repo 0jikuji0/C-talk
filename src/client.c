@@ -31,29 +31,30 @@
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (CLIENT) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
 Socket initialize_client(uint16_t port, char * connection_host) {
-
     int sock = init_socket(TCP);
 
-    // Configuration du socket
-    struct sockaddr_in* socket_address;
-    assert((socket_address = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in)))!= NULL);
-    socket_address->sin_family = AF_INET;
-    socket_address->sin_port = port;
+    struct sockaddr_in socket_address;
+    socket_address.sin_family = AF_INET;
+    socket_address.sin_port = htons(port);
 
-    int inet_return_code = inet_pton(AF_INET, connection_host, &socket_address->sin_addr);
+    int inet_return_code = inet_pton(AF_INET, connection_host, &socket_address.sin_addr);
 
-    if (inet_return_code == -1) {
-        LOG_ERROR("Adresse invalide");
+    if (inet_return_code <= 0) {
+        LOG_ERROR("Adresse IP invalide ou erreur de conversion");
     }
 
-    Socket socket = newSocket(sock, socket_address);
+    // CORRECTION ICI : Déréférencer le pointeur (*) et ajouter le mode (TCP)
+    Socket socket = newSocket(sock, socket_address, TCP);
 
-    int socket_address_length = sizeof(*socket_address);
-    int connection_status = connect(socket.socket, (struct sockaddr *) socket_address, socket_address_length);
+    // Connexion
+    int socket_address_length = sizeof(socket_address);
+    int connection_status = connect(socket.socket, (struct sockaddr *) &socket_address, socket_address_length);
 
     if (connection_status == -1) {
         LOG_ERROR("Echec de la connexion au serveur");
     }
+
+    // Nettoyage : socket_address n'est plus utile, la structure est copiée dans 'socket'
 
     return socket;
 }
@@ -68,7 +69,7 @@ void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer) {
     buffer[received_bytes] = '\0';
 }
 
-int send_message_client(int socket_fd, char message[]) {
+int send_message_client(int socket_fd, char* message) {
     int send_bytes = send(socket_fd, message, strlen(message), 0);
 
     if (send_bytes == -1) {

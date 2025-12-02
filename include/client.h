@@ -64,7 +64,7 @@ void receive_message_client(int socket_fd, uint32_t buffer_size, char *buffer);
  * @example
  *     int result = send_message_client(sock, "Bonjour, monde !");
  */
-int send_message_client(int socket_fd, char message[]);
+int send_message_client(int socket_fd, char* message);
 
 /**
  * @brief Récupère les caractères écrits dans STDIN et renvoie un pointeur vers la chaîne de caractère

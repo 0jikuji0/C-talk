@@ -7,20 +7,20 @@
 size_t mod_exp(size_t base, size_t exposant, size_t mod) {
     size_t resultat = 1;
     base = base % mod;
-    printf("[mod_exp] Calcul de %lu^%lu %% %lu\n", base, exposant, mod);
+    // printf("[mod_exp] Calcul de %lu^%lu %% %lu\n", base, exposant, mod);
     while (exposant > 0) {
-        printf("[mod_exp] exposant = %lu (binaire : ", exposant);
+        // printf("[mod_exp] exposant = %lu (binaire : ", exposant);
         for (int i = 63; i >= 0; i--) printf("%lu", (exposant >> i) & 1);
-        printf(")\n");
+        // printf(")\n");
         if (exposant % 2 == 1) {
-            printf("[mod_exp] Bit de poids faible = 1 → resultat = (resultat * base) %% mod\n");
+            // printf("[mod_exp] Bit de poids faible = 1 → resultat = (resultat * base) %% mod\n");
             resultat = (resultat * base) % mod;
         } else {
-            printf("[mod_exp] Bit de poids faible = 0 → pas de multiplication\n");
+            // printf("[mod_exp] Bit de poids faible = 0 → pas de multiplication\n");
         }
         exposant = exposant >> 1;
         base = (base * base) % mod;
-        printf("[mod_exp] Nouvelle base = %lu, nouvel exposant = %lu\n", base, exposant);
+        // printf("[mod_exp] Nouvelle base = %lu, nouvel exposant = %lu\n", base, exposant);
     }
     return resultat;
 }
@@ -28,16 +28,16 @@ size_t mod_exp(size_t base, size_t exposant, size_t mod) {
 
 void xor_encrypt(const char *plaintext, char *ciphertext, size_t length, size_t key) {
     char *key_bytes = (char *)&key;
-    printf("[xor_encrypt] Clé en octets : ");
+    // printf("[xor_encrypt] Clé en octets : ");
     for (size_t i = 0; i < sizeof(key); i++) {
-        printf("%02x ", key_bytes[i]);
+        // printf("%02x ", key_bytes[i]);
     }
-    printf("\n");
+    // printf("\n");
     for (size_t i = 0; i < length; i++) {
-        printf("[xor_encrypt] plaintext[%zu] = %02x, key_bytes[%zu %% %zu] = %02x → XOR = %02x\n",
-               i, plaintext[i], i, sizeof(key), key_bytes[i % sizeof(key)], plaintext[i] ^ key_bytes[i % sizeof(key)]);
+        // printf("[xor_encrypt] plaintext[%zu] = %02x, key_bytes[%zu %% %zu] = %02x → XOR = %02x\n",
+        //        i, plaintext[i], i, sizeof(key), key_bytes[i % sizeof(key)], plaintext[i] ^ key_bytes[i % sizeof(key)]);
         ciphertext[i] = plaintext[i] ^ key_bytes[i % sizeof(key)];
-        printf("ciphertext[%zu] = %02x\n", i, ciphertext[i]);
+        // printf("ciphertext[%zu] = %02x\n", i, ciphertext[i]);
     }
     ciphertext[length] = '\0';
 }
@@ -57,13 +57,13 @@ void privateParams(size_t * secret_key) {
 
 size_t publicKey(size_t p, size_t g, size_t secret_key) {
     size_t public_key = mod_exp(g, secret_key, p);
-    printf("[Public Key] %lu\n", public_key);
+    // printf("[Public Key] %lu\n", public_key);
     return public_key;
 }
 
 size_t privateKey(size_t p, size_t public_key, size_t secret_key) {
     size_t private_key = mod_exp(public_key, secret_key, p);
-    printf("[Private Key] %lu\n", private_key);
+    // printf("[Private Key] %lu\n", private_key);
     return private_key;
 }
 

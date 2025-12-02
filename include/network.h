@@ -34,15 +34,16 @@ typedef struct {
  */
 
 /** @brief Enum ayant pour but de simplifier les type de sockets utilisés. */
-enum Mode {
+typedef enum Mode {
     TCP = SOCK_STREAM,
     UDP = SOCK_DGRAM
-};
+} Mode;
 
-/** @brief Type représentant un socket et son adresse. */
+/** @brief Type représentant un socket, son adresse et son mode de transmission. */
 typedef struct {
     int socket;
-    struct sockaddr_in* address;
+    struct sockaddr_in address;
+    Mode mode;
 } Socket;
 
 /** @brief Type représentant un serveur de socket
@@ -67,7 +68,7 @@ typedef struct {
  * @example
  *  Socket my_socket = newSocket(socketfd, *address);
  */
-Socket newSocket(int socket, struct sockaddr_in* address);
+Socket newSocket(int socket, struct sockaddr_in address, Mode mode);
 
 /**
  * @brief Crée un struct ServerSocket et le retourne.
@@ -93,7 +94,7 @@ ServerSocket newServerSocket(Socket* listening_socket, Socket* client_socket);
  * @example
  * Socket my_socket = create_socket(UDP, 42069);
  */
-Socket create_socket(enum Mode mode, uint16_t port);
+Socket create_socket(Mode mode, uint16_t port);
 
 // Libération de socket
 void free_socket(Socket socket);
@@ -103,9 +104,9 @@ void s_listen(int socket);
 Socket s_accept(int socket);
 
 // Initialisation de socket
-int init_socket(enum Mode mode);
-void param_socket(int socket);
-struct sockaddr_in* attach_address(int socket, uint16_t port);
+int init_socket(Mode mode);
+void param_socket(int socket, Mode mode);
+struct sockaddr_in attach_address(int socket, uint16_t port);
 
 // Fermeture de socket
 int close_socket(Socket socket);

@@ -31,12 +31,12 @@ int main(int argc, char* argv[]) {
 
         char * ciphertext = NULL;
 
-        const char * plaintext = "coucou";
+        char * plaintext = "coucou";
 
-        encrypt(plaintext, &ciphertext, private_key);
+        //encrypt(plaintext, &ciphertext, private_key);
+        //send_message_client(socket.socket, ciphertext);
 
-        send_message_client(socket.socket, ciphertext);
-
+        send_message_client(socket.socket, plaintext);
         free(ciphertext);
 
 
@@ -56,8 +56,9 @@ int main(int argc, char* argv[]) {
                 break;
             }
 
-            encrypt(plaintext, &ciphertext, private_key);
-            send_message_client(socket.socket, ciphertext);
+            //encrypt(plaintext, &ciphertext, private_key);
+            //send_message_client(socket.socket, ciphertext);
+            send_message_client(socket.socket, message);
             free(ciphertext);
             ciphertext = NULL;
         }
@@ -87,13 +88,13 @@ int main(int argc, char* argv[]) {
 
         // soit secret_key_c la clé secrète du client et secret_key_s la clé sercrète du serveur
         // échanger p et g
-        exchange_primes(s_sock.connection.socket);
+        //exchange_primes(s_sock.connection.socket);
 
         // public_key = échanger le résultat r de (g^secret_key_s) % p
         r = publicKey(p, g, secret_key);
 
         // public_key du client
-        public_key = exchange_public_keys(s_sock.connection.socket, r);
+        //public_key = exchange_public_keys(s_sock.connection.socket, r);
 
         // (r ^ secret_key_s) % p
         // private_key = On a donc (g ^ secret_key_c * secret_key_s) % p
@@ -113,8 +114,8 @@ int main(int argc, char* argv[]) {
                 message = NULL;
             }
 
-            char* decrypted_message = NULL;
-            decrypt(message, &decrypted_message, private_key);
+//            char* decrypted_message = NULL;
+  //          decrypt(message, &decrypted_message, private_key);
         }
 
         close_server(s_sock);
