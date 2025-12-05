@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- window.xml - Interface de la fenêtre principale -->
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  
+  <!-- Fenêtre principale -->
+  <object class="GtkApplicationWindow" id="main_window">
+    <property name="title">Mon Application GTK4</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    
+    <!-- Barre de titre avec HeaderBar -->
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="headerbar">
+        <property name="show-title-buttons">true</property>
+        
+        <!-- Titre personnalisé -->
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="label">Mon Application</property>
+            <style>
+              <class name="title"/>
+            </style>
+          </object>
+        </child>
+        
+        <!-- Bouton menu à droite -->
+        <child type="end">
+          <object class="GtkMenuButton" id="menu_button">
+            <property name="icon-name">open-menu-symbolic</property>
+            <property name="tooltip-text">Menu de l'application</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    
+    <!-- Contenu principal -->
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">0</property>
+        
+        <!-- Zone de contenu centrale -->
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="vexpand">true</property>
+            <property name="hexpand">true</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="spacing">24</property>
+            <property name="margin-top">48</property>
+            <property name="margin-bottom">48</property>
+            <property name="margin-start">48</property>
+            <property name="margin-end">48</property>
+            
+            <!-- Icône -->
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">application-x-executable</property>
+                <property name="pixel-size">128</property>
+              </object>
+            </child>
+            
+            <!-- Titre -->
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Bienvenue dans Mon Application</property>
+                <style>
+                  <class name="title-1"/>
+                </style>
+              </object>
+            </child>
+            
+            <!-- Description -->
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Cliquez sur le bouton menu (☰) en haut à droite pour accéder aux options.</property>
+                <property name="wrap">true</property>
+                <property name="justify">center</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+            
+            <!-- Instructions -->
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
+                <property name="margin-top">24</property>
+                
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Raccourcis clavier :</property>
+                    <style>
+                      <class name="heading"/>
+                    </style>
+                  </object>
+                </child>
+                
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">• Ctrl+Q : Quitter l'application</property>
+                  </object>
+                </child>
+                
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">• F1 : À propos</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            
+            <!-- Bouton d'exemple -->
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <property name="spacing">12</property>
+                <property name="halign">center</property>
+                <property name="margin-top">24</property>
+                
+                <child>
+                  <object class="GtkButton">
+                    <property name="label">Préférences</property>
+                    <property name="action-name">app.preferences</property>
+                    <style>
+                      <class name="suggested-action"/>
+                    </style>
+                  </object>
+                </child>
+                
+                <child>
+                  <object class="GtkButton">
+                    <property name="label">À propos</property>
+                    <property name="action-name">app.about</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            
+          </object>
+        </child>
+        
+        <!-- Barre d'état en bas (optionnelle) -->
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <property name="margin-start">12</property>
+            <property name="margin-end">12</property>
+            
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Prêt</property>
+                <property name="hexpand">true</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+            
+            <child>
+              <object class="GtkLabel">
+                <property name="label">GTK4 Application</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        
+      </object>
+    </child>
+  </object>
+</interface>
