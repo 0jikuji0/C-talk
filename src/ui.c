@@ -275,7 +275,7 @@ on_activate (GtkApplication *app, gpointer user_data)
   gtk_header_bar_pack_start (GTK_HEADER_BAR (header), sidebar_button);
   
   // Titre de la HeaderBar
-  GtkWidget *title_label = gtk_label_new ("💬 Chat");
+  GtkWidget *title_label = gtk_label_new ("Chat");
   gtk_widget_add_css_class (title_label, "title");
   gtk_header_bar_set_title_widget (GTK_HEADER_BAR (header), title_label);
   
@@ -309,7 +309,7 @@ on_activate (GtkApplication *app, gpointer user_data)
   gtk_revealer_set_reveal_child (GTK_REVEALER (sidebar_revealer), TRUE);
   
   sidebar = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_size_request (sidebar, 280, -1);
+  gtk_widget_set_size_request (sidebar, 10, 0);
   
   // Barre de recherche
   GtkWidget *search_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -410,8 +410,7 @@ on_activate (GtkApplication *app, gpointer user_data)
   gtk_window_present (GTK_WINDOW (main_window));
 }
 
-int
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   GtkApplication *app;
   int status;
