@@ -43,10 +43,8 @@ Socket initialize_client(uint16_t port, char * connection_host) {
         LOG_ERROR("Adresse IP invalide ou erreur de conversion");
     }
 
-    // CORRECTION ICI : Déréférencer le pointeur (*) et ajouter le mode (TCP)
     Socket socket = newSocket(sock, socket_address, TCP);
 
-    // Connexion
     int socket_address_length = sizeof(socket_address);
     int connection_status = connect(socket.socket, (struct sockaddr *) &socket_address, socket_address_length);
 

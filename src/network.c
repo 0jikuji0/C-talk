@@ -93,7 +93,7 @@ struct sockaddr_in attach_address(int socket, uint16_t port) {
     // Ecoute sur toutes les adresses
     address.sin_addr.s_addr = INADDR_ANY;
     // Conversion du port en valeur réseaux (Host TO Network Short)
-    address.sin_port = port;
+    address.sin_port = htons(port);
 
     if (bind(socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
         LOG_ERROR("Echec d'attachement: ");

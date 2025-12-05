@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
         close_server(sockets);
          */
 
-        ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
+        // ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
 
         size_t p, g, secret_key, public_key, private_key;
         size_t r;
@@ -100,26 +100,8 @@ int main(int argc, char* argv[]) {
         // private_key = On a donc (g ^ secret_key_c * secret_key_s) % p
         private_key = privateKey(p, public_key, secret_key);
 
-        char* message = receive_message_server(s_sock.connection.socket);
-        if (message) {
-            printf("Message reçu: %s\n", message);
-            free(message);
-        }
 
-        for (;;) {
-            char* message = receive_message_server(s_sock.connection.socket);
-            if (message) {
-                printf("Message reçu: %s\n", message);
-                free(message);
-                message = NULL;
-            }
-
-//            char* decrypted_message = NULL;
-  //          decrypt(message, &decrypted_message, private_key);
-        }
-
-        close_server(s_sock);
-        free_server(s_sock);
+        run_server_loop(DEFAULT_LISTENING_PORT);
     }
 
 }

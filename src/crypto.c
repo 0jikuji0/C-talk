@@ -10,7 +10,7 @@ size_t mod_exp(size_t base, size_t exposant, size_t mod) {
     // printf("[mod_exp] Calcul de %lu^%lu %% %lu\n", base, exposant, mod);
     while (exposant > 0) {
         // printf("[mod_exp] exposant = %lu (binaire : ", exposant);
-        for (int i = 63; i >= 0; i--) printf("%lu", (exposant >> i) & 1);
+        for (int i = 63; i >= 0; i--) ;//printf("%lu", (exposant >> i) & 1);
         // printf(")\n");
         if (exposant % 2 == 1) {
             // printf("[mod_exp] Bit de poids faible = 1 → resultat = (resultat * base) %% mod\n");

@@ -30,26 +30,6 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
-ServerSocket init_server(uint16_t port) {
-    // Utilisation, pour l'instant, du port par défaut
-    // pour écouter en TCP
-    Socket sock = create_socket(TCP, port);
-
-    // TODO créer un thread afin que ça ne bloque pas le programme.
-    ThreadPool thr_pool = create_thread_pool();
-
-    // Modifier le comportement pour supporter le multi-threading ?
-    s_listen(sock.socket);
-    Socket client_sock = s_accept(sock.socket);
-
-    // TODO socket UDP pour signaler la room au réseau
-    // listening_loop() en UDP dans un thread dédié
-
-    ServerSocket server_socket = newServerSocket(&sock, &client_sock);
-
-    return server_socket;
-}
-
 // --- Routine UDP (Signalement) ---
 void* udp_beacon_thread(void* arg) {
     // On récupère le port depuis l'argument (ou une constante)
