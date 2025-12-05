@@ -1,3 +1,5 @@
+// gcc $(pkg-config --cflags --libs gtk4) src/ui.c -o ui
+
 #include <gtk/gtk.h>
 #include <time.h>
 #include <string.h>
