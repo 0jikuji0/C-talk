@@ -3,9 +3,7 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   
-  <!-- Menu principal qui apparaît dans le bouton hamburger -->
   <menu id="primary_menu">
-    <!-- Section Fichier -->
     <section>
       <item>
         <attribute name="label" translatable="yes">_Nouveau</attribute>
@@ -30,7 +28,6 @@
       </submenu>
     </section>
     
-    <!-- Section Édition -->
     <section>
       <item>
         <attribute name="label" translatable="yes">_Préférences</attribute>
@@ -38,7 +35,6 @@
       </item>
     </section>
     
-    <!-- Section Affichage -->
     <section>
       <item>
         <attribute name="label" translatable="yes">Mode _sombre</attribute>
@@ -50,7 +46,6 @@
       </item>
     </section>
     
-    <!-- Section Aide -->
     <section>
       <item>
         <attribute name="label" translatable="yes">_Aide</attribute>
@@ -62,7 +57,6 @@
       </item>
     </section>
     
-    <!-- Section Quitter -->
     <section>
       <item>
         <attribute name="label" translatable="yes">_Quitter</attribute>
@@ -71,9 +65,7 @@
     </section>
   </menu>
   
-  <!-- Barre de menu classique (pour les systèmes qui l'utilisent) -->
   <menu id="menubar">
-    <!-- Menu Fichier -->
     <submenu>
       <attribute name="label" translatable="yes">_Fichier</attribute>
       <section>
@@ -98,7 +90,6 @@
       </section>
     </submenu>
     
-    <!-- Menu Édition -->
     <submenu>
       <attribute name="label" translatable="yes">_Édition</attribute>
       <section>
@@ -119,7 +110,6 @@
       </section>
     </submenu>
     
-    <!-- Menu Affichage -->
     <submenu>
       <attribute name="label" translatable="yes">_Affichage</attribute>
       <section>
@@ -134,7 +124,6 @@
       </section>
     </submenu>
     
-    <!-- Menu Aide -->
     <submenu>
       <attribute name="label" translatable="yes">_Aide</attribute>
       <section>

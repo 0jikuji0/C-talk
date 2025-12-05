@@ -13,7 +13,7 @@ on_preferences_activate (GSimpleAction *action,
   g_print ("Preferences activé\n");
   
   // Créer une fenêtre pour les préférences (GTK4 moderne)
-  GtkWidget *dialog = gtk_window_new ();
+  GtkWidget *dialog = gtk_window_new();
   gtk_window_set_title (GTK_WINDOW (dialog), "Préférences");
   gtk_window_set_default_size (GTK_WINDOW (dialog), 400, 300);
   gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
@@ -29,7 +29,7 @@ on_preferences_activate (GSimpleAction *action,
   gtk_widget_set_margin_start (box, 24);
   gtk_widget_set_margin_end (box, 24);
   
-  GtkWidget *label = gtk_label_new ("Ici vous pouvez configurer vos préférences");
+  GtkWidget *label = gtk_label_new ("Trancho > Sananes");
   gtk_box_append (GTK_BOX (box), label);
   
   GtkWidget *button = gtk_button_new_with_label ("Fermer");
