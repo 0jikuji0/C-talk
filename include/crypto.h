@@ -9,7 +9,7 @@
  * ----------------------------------------------------------------------------
  * Auteur(s) : FortyTwo Dev
  * Date de création : 05/10/2025
- * Dernière modification : 05/10/2025
+ * Dernière modification : 1/12/2025
  * =============================================================================
  */
 
@@ -18,15 +18,16 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <gmp.h>
 
-void encrypt(const char *plaintext, char **ciphertext, uint64_t private_key);
+void encrypt(const char *plaintext, char **ciphertext, const mpz_t private_key);
 
-void decrypt(const char *ciphertext, char **decrypted, uint64_t private_key);
+void decrypt(const char *ciphertext, char **decrypted, const mpz_t private_key);
 
-void publicParams(uint64_t * p, uint64_t * g);
-void privateParams(uint64_t * secret_key);
+void publicParams(mpz_t p, mpz_t g);
+void privateParams(mpz_t secret_key);
 
-uint64_t publicKey(uint64_t p, uint64_t g, uint64_t secret_key);
-uint64_t privateKey(uint64_t p, uint64_t public_key, uint64_t secret_key);
+void publicKey(mpz_t public_key, const mpz_t p, const mpz_t g, const mpz_t secret_key);
+void privateKey(mpz_t private_key, const mpz_t p, const mpz_t other_public_key, const mpz_t secret_key);
 
 #endif // C_TALK_CRYPTO_H

@@ -4,7 +4,7 @@
 
 # Compiler and flags
 CC      := gcc
-CFLAGS  := -Wall -Wextra -Werror -std=c99 -I include
+CFLAGS  := -Wall -Wextra -Werror -std=c99 -I include -lgmp
 LDFLAGS :=
 
 # Directories
@@ -30,7 +30,7 @@ all: $(TARGET)
 # Link step
 $(TARGET): $(OBJ)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(OBJ) -o $@ $(LDFLAGS)
+	$(CC) $(OBJ) -o $@ $(LDFLAGS) -lgmp
 	@echo "✅ Build complete: $@"
 
 # Compile step

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <gmp.h>
 
 int main(int argc, char* argv[]) {
 
@@ -20,14 +21,26 @@ int main(int argc, char* argv[]) {
         Socket socket = initialize_client(DEFAULT_LISTENING_PORT, DEFAULT_CONNECTION_HOST);
 
         // génération des clés
+        mpz_t p, g, secret_key, public_key, private_key, public_key_server_mpz;
+        mpz_inits(p, g, secret_key, public_key, private_key, public_key_server_mpz, ((void *)0));
 
-        uint64_t p, g, secret_key, public_key, private_key;
-        publicParams(&p, &g);
-        privateParams(&secret_key);
+        publicParams(p, g);
+        privateParams(secret_key);
 
-        public_key = publicKey(p, g, secret_key);
+        publicKey(public_key, p, g, secret_key);
 
-        private_key = privateKey(p, public_key, secret_key);
+        char buffer_public_key[42];
+        gmp_snprintf(buffer_public_key, sizeof(buffer_public_key), "%Zd", public_key);
+        const char * public_key_server = "345";
+        send_message_client(socket.socket, buffer_public_key);
+
+        // receive_message_client(socket.socket, sizeof(uint32_t), public_key_server);
+
+        // printf("[Public Key Server] %s\n", public_key_server_mpz);
+        gmp_printf("[Public Key Server] %Zd\n", public_key_server_mpz);
+        mpz_set_str(public_key_server_mpz, public_key_server, 10);
+
+        privateKey(private_key, p, public_key_server_mpz, secret_key);
 
         char * ciphertext = NULL;
 
@@ -80,41 +93,54 @@ int main(int argc, char* argv[]) {
 
         ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
 
-        size_t p, g, secret_key, public_key, private_key;
-        size_t r;
-        publicParams(&p, &g);
-        privateParams(&secret_key);
+        mpz_t p, g, secret_key, public_key, private_key, public_key_client_mpz;
+        mpz_inits(p, g, secret_key, public_key, private_key, public_key_client_mpz, NULL);
+
+        publicParams(p, g);
+        privateParams(secret_key);
 
         // soit secret_key_c la clé secrète du client et secret_key_s la clé sercrète du serveur
         // échanger p et g
-        exchange_primes(s_sock.connection.socket);
+        //exchange_primes(s_sock.connection.socket);
 
         // public_key = échanger le résultat r de (g^secret_key_s) % p
-        r = publicKey(p, g, secret_key);
+        publicKey(public_key, p, g, secret_key);
 
         // public_key du client
-        public_key = exchange_public_keys(s_sock.connection.socket, r);
 
+        char buffer_public_key[42];
+        // snprintf(buffer_public_key, sizeof(buffer_public_key), "%zu", public_key);
+        gmp_snprintf(buffer_public_key, sizeof(buffer_public_key), "%Zd", public_key);
+
+        char* public_key_client = receive_message_server(s_sock.connection.socket);
+        
+        send_message_server(s_sock.connection.socket, buffer_public_key);
+
+        mpz_set_str(public_key_client_mpz, public_key_client, 10);
+
+        // printf("[Public Key Client] %lu\n", 42);
         // (r ^ secret_key_s) % p
         // private_key = On a donc (g ^ secret_key_c * secret_key_s) % p
-        private_key = privateKey(p, public_key, secret_key);
+        privateKey(private_key, p, public_key_client_mpz, secret_key);
 
         char* message = receive_message_server(s_sock.connection.socket);
+
         if (message) {
             printf("Message reçu: %s\n", message);
             free(message);
         }
 
         for (;;) {
-            char* message = receive_message_server(s_sock.connection.socket);
-            if (message) {
-                printf("Message reçu: %s\n", message);
-                free(message);
-                message = NULL;
-            }
-
-            char* decrypted_message = NULL;
-            decrypt(message, &decrypted_message, private_key);
+            char* ciphertext = receive_message_server(s_sock.connection.socket);
+            if (ciphertext) {
+                char * decrypted = NULL;
+                decrypt(ciphertext, &decrypted, private_key);
+                printf("Message reçu \nAvant dechiffrement : %s\nApres dechiffrement : %s\n", ciphertext, decrypted);
+                free(ciphertext);
+                ciphertext = NULL;
+                free(decrypted);
+                decrypted = NULL;
+            }        
         }
 
         close_server(s_sock);
