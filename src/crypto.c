@@ -2,10 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
+
 
 // Fonction pour calculer (base^exposant) % mod (exponentiation modulaire)
-size_t mod_exp(size_t base, size_t exposant, size_t mod) {
-    size_t resultat = 1;
+uint64_t mod_exp(uint64_t base, uint64_t exposant, uint64_t mod) {
+    uint64_t resultat = 1;
     base = base % mod;
     // printf("[mod_exp] Calcul de %lu^%lu %% %lu\n", base, exposant, mod);
     while (exposant > 0) {
@@ -26,14 +28,14 @@ size_t mod_exp(size_t base, size_t exposant, size_t mod) {
 }
 
 
-void xor_encrypt(const char *plaintext, char *ciphertext, size_t length, size_t key) {
+void xor_encrypt(const char *plaintext, char *ciphertext, size_t length, uint64_t key) {
     char *key_bytes = (char *)&key;
     // printf("[xor_encrypt] Clé en octets : ");
-    for (size_t i = 0; i < sizeof(key); i++) {
+    for (uint64_t i = 0; i < sizeof(key); i++) {
         // printf("%02x ", key_bytes[i]);
     }
     // printf("\n");
-    for (size_t i = 0; i < length; i++) {
+    for (uint64_t i = 0; i < length; i++) {
         // printf("[xor_encrypt] plaintext[%zu] = %02x, key_bytes[%zu %% %zu] = %02x → XOR = %02x\n",
         //        i, plaintext[i], i, sizeof(key), key_bytes[i % sizeof(key)], plaintext[i] ^ key_bytes[i % sizeof(key)]);
         ciphertext[i] = plaintext[i] ^ key_bytes[i % sizeof(key)];
@@ -42,38 +44,38 @@ void xor_encrypt(const char *plaintext, char *ciphertext, size_t length, size_t 
     ciphertext[length] = '\0';
 }
 
-void xor_decrypt(const char *ciphertext, char *decrypted, size_t length, size_t key) {
+void xor_decrypt(const char *ciphertext, char *decrypted, size_t length, uint64_t key) {
     xor_encrypt(ciphertext, decrypted, length, key);
 }
 
-void publicParams(size_t * p, size_t * g) {
+void publicParams(uint64_t * p, uint64_t * g) {
     *p = 101;
     *g = 863;
 }
 
-void privateParams(size_t * secret_key) {
+void privateParams(uint64_t * secret_key) {
     *secret_key = 3343;
 }
 
-size_t publicKey(size_t p, size_t g, size_t secret_key) {
-    size_t public_key = mod_exp(g, secret_key, p);
+uint64_t publicKey(uint64_t p, uint64_t g, uint64_t secret_key) {
+    uint64_t public_key = mod_exp(g, secret_key, p);
     // printf("[Public Key] %lu\n", public_key);
     return public_key;
 }
 
-size_t privateKey(size_t p, size_t public_key, size_t secret_key) {
-    size_t private_key = mod_exp(public_key, secret_key, p);
+uint64_t privateKey(uint64_t p, uint64_t public_key, uint64_t secret_key) {
+    uint64_t private_key = mod_exp(public_key, secret_key, p);
     // printf("[Private Key] %lu\n", private_key);
     return private_key;
 }
 
-void encrypt(const char *plaintext, char **ciphertext, size_t private_key) {
+void encrypt(const char *plaintext, char **ciphertext, uint64_t private_key) {
     size_t length = strlen(plaintext);
     assert((*ciphertext = (char *)malloc(sizeof(char) * length + 1)) != NULL);
     xor_encrypt(plaintext, *ciphertext, length, private_key);
 }
 
-void decrypt(const char *ciphertext, char **decrypted, size_t private_key) {
+void decrypt(const char *ciphertext, char **decrypted, uint64_t private_key) {
     size_t length = strlen(ciphertext);
     assert((*decrypted = (char *)malloc(sizeof(char) * length + 1)) != NULL);
     xor_decrypt(ciphertext, *decrypted, length, private_key);
