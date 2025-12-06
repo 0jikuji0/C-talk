@@ -50,12 +50,6 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            if (strcmp(message, "/exit") == 0) {
-                free(message);
-                message = NULL;
-                break;
-            }
-
             //encrypt(plaintext, &ciphertext, private_key);
             //send_message_client(socket.socket, ciphertext);
             send_message_client(socket.socket, message);

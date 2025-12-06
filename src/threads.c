@@ -1,5 +1,6 @@
 // src/threads.c
 #include "../include/threads.h"
+#include <pthread.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -23,10 +24,26 @@ void add_to_pool(ThreadPool* thread_pool, Thread* thread) {
         assert(temp != NULL);
         thread_pool->pool = temp;
     }
-    thread_pool->pool[thread_pool->size] = thread;
-    thread_pool->size++;
+
+    for (int i = 0; i < thread_pool->size; i++) {
+        if (thread_pool->pool[i] == NULL) {
+            thread_pool->pool[i] = thread;
+            thread_pool->size++;
+        }
+    }
 
     pthread_mutex_unlock(&thread_pool->lock);
 }
 
-// TODO: implémenter remove_from_pool avec le même mutex ...
+void remove_from_pool(ThreadPool *thread_pool, Thread *thread) {
+    pthread_mutex_lock(&thread_pool->lock);
+
+    for (int i = 0; i < thread_pool->size; i++) {
+        if (thread_pool->pool[i]->thread_id == thread->thread_id) {
+            thread_pool->pool[i] = NULL;
+            thread_pool->size--;
+        }
+    }
+
+    pthread_mutex_unlock(&thread_pool->lock);
+}

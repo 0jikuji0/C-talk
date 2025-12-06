@@ -30,6 +30,8 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
+ThreadPool pool;
+
 // --- Routine UDP (Signalement) ---
 void* udp_beacon_thread(void* arg) {
     // On récupère le port depuis l'argument (ou une constante)
@@ -55,6 +57,25 @@ void* udp_beacon_thread(void* arg) {
     return NULL;
 }
 
+void broadcast_to_other_clients(int socket_fd, const char* message) {
+    pthread_mutex_lock(&pool.lock);
+
+    int count = pool.size;
+    Thread* threads[count];
+    for (int i = 0; i < count; i++) {
+        threads[i] = pool.pool[i];
+    }
+
+    pthread_mutex_unlock(&pool.lock);
+
+    for (int i = 0; i < count; i++) {
+        Thread* t = threads[i];
+        if (t->is_active && t->context.socket_fd != socket_fd) {
+            send_message_server(t->context.socket_fd, (char*)message);
+        }
+    }
+}
+
 // --- Routine TCP (Gestion Client) ---
 void* client_handler_thread(void* arg) {
     Thread* self = (Thread*)arg;
@@ -64,21 +85,27 @@ void* client_handler_thread(void* arg) {
 
     // Boucle de réception des messages
     while (1) {
-        char* msg = receive_message_server(sock);
-        if (msg == NULL) {
-            // Déconnexion détectée
+        char* msg = receive_message(sock);
+        if (!msg) {
+            printf("Client %d déconnecté.\n", sock);
+            break;
+        }
+
+        if (strcmp(msg, "/exit") == 0) {
+            printf("Client %d a quitté.\n", sock);
+            free(msg);
             break;
         }
         printf("[Client %d] : %s\n", sock, msg);
 
-        // Exemple : Echo du message (ou broadcast aux autres clients plus tard)
-        send_message_server(sock, "Reçu 5/5");
+        broadcast_to_other_clients(sock, msg);
 
         free(msg);
     }
 
     close(sock);
-    // TODO : Ici, il faudrait appeler remove_from_pool() pour se retirer proprement
+    remove_from_pool(&pool, self);
+
     return NULL;
 }
 
@@ -88,7 +115,7 @@ void run_server_loop(uint16_t port) {
     s_listen(listener_sock.socket);
 
     // 2. Création du Thread Pool
-    ThreadPool pool = create_thread_pool();
+    pool = create_thread_pool();
 
     // 3. Lancement du Thread UDP (Beacon)
     pthread_t udp_thread;
