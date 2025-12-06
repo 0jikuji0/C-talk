@@ -25,20 +25,19 @@ int main(int argc, char* argv[]) {
         publicParams(&p, &g);
         privateParams(&secret_key);
 
-        public_key = publicKey(p, g, secret_key);
-
-        private_key = privateKey(p, public_key, secret_key);
-
+        send_public_key(socket, p, g, secret_key);
+        generate_private_key(socket, p, secret_key);
+        
         char * ciphertext = NULL;
-
-        char * plaintext = "coucou";
+        // char * plaintext = "coucou";
 
         //encrypt(plaintext, &ciphertext, private_key);
         //send_message_client(socket.socket, ciphertext);
 
-        send_message_client(socket.socket, plaintext);
+        // send_message_client(socket.socket, plaintext);
         free(ciphertext);
 
+        // receive_message(socket.socket);
 
         for (;;) {
             printf("Votre message: ");

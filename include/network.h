@@ -40,12 +40,14 @@ typedef enum Mode {
 } Mode;
 
 /** @brief Type représentant un socket, son adresse et son mode de transmission. */
-typedef struct {
+#ifndef DEFINE_SOCKET_STRUCT
+#define DEFINE_SOCKET_STRUCT
+typedef struct Socket{
     int socket;
     struct sockaddr_in address;
     Mode mode;
 } Socket;
-
+#endif
 /** @brief Type représentant un serveur de socket
  *
 (1 qui écoute les nouvelles connexions, et 1 qui communique avec le client).
@@ -118,5 +120,32 @@ char* receive_message(int socket);
 
 // Fonctions utilitaires
 void get_ip_str(struct sockaddr_in client_address, char* buff);
+
+/**
+ * @brief Envoie la clé publique calculée à partir des paramètres Diffie-Hellman.
+ *
+ * @param socket Un socket serveur ou client.
+ * @param p Le nombre premier utilisé pour le calcul de la clé publique.
+ * @param g Le générateur utilisé pour le calcul de la clé publique.
+ * @param secret_key La clé secrète locale utilisée pour calculer la clé publique.
+ *
+ * @note En cas d'erreur lors de l'envoi, un message est affiché via `LOG_ERROR`.
+ */
+void send_public_key(Socket socket, uint64_t p, uint64_t g, uint64_t secret_key);
+
+/**
+ * @brief Génère la clé privée partagée à partir de la clé publique reçue et de la clé secrète locale,
+ *        en utilisant l'algorithme Diffie-Hellman.
+ *
+ * @param socket Un socket serveur ou client.
+ * @param p Le nombre premier utilisé pour le calcul de la clé privée partagée.
+ * @param secret_key La clé secrète locale utilisée pour le calcul.
+ *
+ * @return uint64_t La clé privée partagée calculée.
+ *
+ * @note En cas d'erreur (réception ou conversion), un message est affiché via `LOG_ERROR`.
+ *
+ */
+uint64_t generate_private_key(Socket socket, uint64_t p, uint64_t secret_key);
 
 #endif // C_TALK_NETWORK_H

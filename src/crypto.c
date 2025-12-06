@@ -81,6 +81,7 @@ void decrypt(const char *ciphertext, char **decrypted, uint64_t private_key) {
     xor_decrypt(ciphertext, *decrypted, length, private_key);
 }
 
+
 // int main() {
 
 

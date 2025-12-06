@@ -15,6 +15,7 @@
  */
 
 #include "../include/network.h"
+#include "../include/crypto.h"
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -174,4 +175,29 @@ char* receive_message(int socket) {
 }
 
 void free_socket(Socket socket) {
+}
+
+
+void send_public_key(Socket socket, uint64_t p, uint64_t g, uint64_t secret_key) {
+    uint64_t public_key;
+    publicParams(&p, &g);
+
+    public_key = publicKey(p, g, secret_key);
+
+    char buffer_public_key[4242];
+    snprintf(buffer_public_key, sizeof(buffer_public_key), "%zu", public_key);
+
+    send_message(socket.socket, buffer_public_key);
+}
+
+uint64_t generate_private_key(Socket socket, uint64_t p, uint64_t secret_key) {
+    uint64_t private_key;
+
+    char * public_key = receive_message(socket.socket);
+    uint64_t public_key_uint64_t;
+    sscanf(public_key, "%s", public_key_uint64_t);
+
+    free(public_key);
+
+    return privateKey(public_key_uint64_t, p, secret_key);
 }
