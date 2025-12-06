@@ -30,8 +30,8 @@ Contact contacts[] = {
   { "Étienne Moreau", "À plus tard", TRUE }
 };
 
-static char *
-get_current_time (void)
+
+char * get_current_time (void)
 {
   time_t now = time(NULL);
   struct tm *tm_info = localtime(&now);
@@ -41,8 +41,7 @@ get_current_time (void)
 }
 
 // Fonction pour ajouter un message dans la zone de discussion
-static void
-add_message (const char *username, const char *message, gboolean is_own_message)
+void add_message (const char *username, const char *message, gboolean is_own_message)
 {
   GtkTextIter iter;
   gtk_text_buffer_get_end_iter (text_buffer, &iter);
@@ -71,8 +70,7 @@ add_message (const char *username, const char *message, gboolean is_own_message)
 }
 
 // Fonction appelée quand on envoie un message
-static void
-on_send_clicked (GtkButton *button, gpointer user_data)
+void on_send_clicked (GtkButton *button, gpointer user_data)
 {
   GtkEntryBuffer *buffer = gtk_entry_get_buffer (GTK_ENTRY (entry));
   const char *text = gtk_entry_buffer_get_text (buffer);
@@ -84,15 +82,13 @@ on_send_clicked (GtkButton *button, gpointer user_data)
 }
 
 // Fonction appelée quand on appuie sur Entrée
-static void
-on_entry_activate (GtkEntry *entry_widget, gpointer user_data)
+void on_entry_activate (GtkEntry *entry_widget, gpointer user_data)
 {
   on_send_clicked (NULL, user_data);
 }
 
 // Fonction pour changer de conversation
-static void
-on_contact_selected (GtkListBox *box, GtkListBoxRow *row, gpointer user_data)
+void on_contact_selected (GtkListBox *box, GtkListBoxRow *row, gpointer user_data)
 {
   if (row == NULL)
     return;
@@ -119,8 +115,7 @@ on_contact_selected (GtkListBox *box, GtkListBoxRow *row, gpointer user_data)
 }
 
 // Créer une ligne de contact
-static GtkWidget *
-create_contact_row (Contact *contact)
+GtkWidget * create_contact_row (Contact *contact)
 {
   GtkWidget *row_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
   gtk_widget_set_margin_top (row_box, 8);
@@ -154,8 +149,7 @@ create_contact_row (Contact *contact)
 }
 
 // Filtrer la liste des contacts
-static gboolean
-filter_contacts (GtkListBoxRow *row, gpointer user_data)
+gboolean filter_contacts (GtkListBoxRow *row, gpointer user_data)
 {
   const char *search_text = gtk_editable_get_text (GTK_EDITABLE (search_entry));
   
@@ -176,31 +170,27 @@ filter_contacts (GtkListBoxRow *row, gpointer user_data)
 }
 
 // Callback pour la recherche
-static void
-on_search_changed (GtkSearchEntry *entry, gpointer user_data)
+void on_search_changed (GtkSearchEntry *entry, gpointer user_data)
 {
   gtk_list_box_invalidate_filter (GTK_LIST_BOX (conversations_list));
 }
 
 // Toggle sidebar
-static void
-on_sidebar_toggle (GtkButton *button, gpointer user_data)
+void on_sidebar_toggle (GtkButton *button, gpointer user_data)
 {
   gboolean revealed = gtk_revealer_get_reveal_child (GTK_REVEALER (sidebar_revealer));
   gtk_revealer_set_reveal_child (GTK_REVEALER (sidebar_revealer), !revealed);
 }
 
 // Fonction Quitter
-static void
-on_quit_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+void on_quit_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   GtkApplication *app = GTK_APPLICATION (user_data);
   g_application_quit (G_APPLICATION (app));
 }
 
 // Fonction À propos
-static void
-on_about_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+void on_about_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   const char *authors[] = { 
     "jikuji",
@@ -220,31 +210,28 @@ on_about_activate (GSimpleAction *action, GVariant *parameter, gpointer user_dat
 }
 
 // Fonction Effacer la conversation
-static void
-on_clear_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+void on_clear_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   gtk_text_buffer_set_text (text_buffer, "", 0);
   add_message ("Système", "Conversation effacée", FALSE);
 }
 
 // Actions de l'application
-static GActionEntry app_actions[] = {
+GActionEntry app_actions[] = {
   { "about", on_about_activate },
   { "clear", on_clear_activate },
   { "quit", on_quit_activate }
 };
 
 // Fonction de démarrage
-static void
-on_startup (GtkApplication *app, gpointer user_data)
+void on_startup (GtkApplication *app, gpointer user_data)
 {
   const char *quit_accels[2] = { "<Ctrl>Q", NULL };
   gtk_application_set_accels_for_action (app, "app.quit", quit_accels);
 }
 
 // Créer les tags pour le formatage du texte
-static void
-create_text_tags (void)
+void create_text_tags (void)
 {
   gtk_text_buffer_create_tag (text_buffer, "own",
                               "foreground", "#2196F3",
@@ -257,8 +244,7 @@ create_text_tags (void)
 }
 
 // Fonction d'activation (création de l'interface)
-static void
-on_activate (GtkApplication *app, gpointer user_data)
+void on_activate (GtkApplication *app, gpointer user_data)
 {
   g_action_map_add_action_entries (G_ACTION_MAP (app), app_actions,
                                    G_N_ELEMENTS (app_actions), app);
