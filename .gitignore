@@ -7,7 +7,7 @@
 *.bin
 *.map
 *.log
-
+/build/*
 # === Editor/IDE Files ===
 *.swp
 *.swo
