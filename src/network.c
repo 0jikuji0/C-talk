@@ -24,6 +24,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <inttypes.h>
+
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -184,18 +187,17 @@ void send_public_key(Socket socket, uint64_t p, uint64_t g, uint64_t secret_key)
 
     public_key = publicKey(p, g, secret_key);
 
-    char buffer_public_key[4242];
+    char buffer_public_key[21];
     snprintf(buffer_public_key, sizeof(buffer_public_key), "%zu", public_key);
 
     send_message(socket.socket, buffer_public_key);
 }
 
 uint64_t generate_private_key(int socket, uint64_t p, uint64_t secret_key) {
-    uint64_t private_key;
-
     char * public_key = receive_message(socket);
     uint64_t public_key_uint64_t;
-    sscanf(public_key, "%zu", public_key_uint64_t);
+
+    sscanf(public_key, "%zu", &public_key_uint64_t);
 
     free(public_key);
 

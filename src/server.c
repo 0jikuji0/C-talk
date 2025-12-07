@@ -88,8 +88,8 @@ void* client_handler_thread(void* arg) {
     publicParams(&p, &g);
     privateParams(&secret_key);
     private_key = generate_private_key(sock, p, secret_key);
-    private_key = 29; // force
-    printf("%zu\n", private_key);
+    // private_key = 29; // force
+    printf("[Private Key] : %zu\n", private_key);
 
     // Boucle de réception des messages
     while (1) {
