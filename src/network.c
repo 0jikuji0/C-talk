@@ -195,7 +195,7 @@ uint64_t generate_private_key(int socket, uint64_t p, uint64_t secret_key) {
 
     char * public_key = receive_message(socket);
     uint64_t public_key_uint64_t;
-    sscanf(public_key, "%s", public_key_uint64_t);
+    sscanf(public_key, "%zu", public_key_uint64_t);
 
     free(public_key);
 
