@@ -16,6 +16,7 @@
 #include "../include/server.h"
 #include "../include/network.h"
 #include "../include/threads.h"
+#include "../include/crypto.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -82,25 +83,35 @@ void* client_handler_thread(void* arg) {
     int sock = self->context.socket_fd;
 
     printf("Nouveau client traité sur le thread %lu\n", self->thread_id);
+    printf("test\n");
+    uint64_t p, g, secret_key, public_key, private_key;
+    publicParams(&p, &g);
+    privateParams(&secret_key);
+    private_key = generate_private_key(sock, p, secret_key);
+    private_key = 29; // force
+    printf("%zu\n", private_key);
 
     // Boucle de réception des messages
     while (1) {
-        char* msg = receive_message(sock);
-        if (!msg) {
+        char* decrypted = NULL;
+        char* ciphertext = receive_message(sock);
+        decrypt(ciphertext, &decrypted, private_key);
+        if (!decrypted) {
             printf("Client %d déconnecté.\n", sock);
             break;
         }
 
-        if (strcmp(msg, "/exit") == 0) {
+        if (strcmp(decrypted, "/exit") == 0) {
             printf("Client %d a quitté.\n", sock);
-            free(msg);
+            free(decrypted);
             break;
         }
-        printf("[Client %d] : %s\n", sock, msg);
+        printf("[Client %d] : %s\n", sock, decrypted);
 
-        broadcast_to_other_clients(sock, msg);
+        broadcast_to_other_clients(sock, decrypted);
 
-        free(msg);
+        free(decrypted);
+        free(ciphertext);
     }
 
     close(sock);

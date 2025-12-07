@@ -190,10 +190,10 @@ void send_public_key(Socket socket, uint64_t p, uint64_t g, uint64_t secret_key)
     send_message(socket.socket, buffer_public_key);
 }
 
-uint64_t generate_private_key(Socket socket, uint64_t p, uint64_t secret_key) {
+uint64_t generate_private_key(int socket, uint64_t p, uint64_t secret_key) {
     uint64_t private_key;
 
-    char * public_key = receive_message(socket.socket);
+    char * public_key = receive_message(socket);
     uint64_t public_key_uint64_t;
     sscanf(public_key, "%s", public_key_uint64_t);
 

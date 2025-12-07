@@ -19,7 +19,7 @@
 #include "network.h"
 #include <stdint.h>
 
-#define DEFAULT_CONNECTION_HOST "127.0.0.1"
+#define DEFAULT_CONNECTION_HOST "192.168.1.36"
 #define DEFAULT_LISTENING_PORT 31026
 #define MAX_BUFFER_SIZE 1024
 

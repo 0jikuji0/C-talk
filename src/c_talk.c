@@ -26,32 +26,31 @@ int main(int argc, char* argv[]) {
         privateParams(&secret_key);
 
         send_public_key(socket, p, g, secret_key);
-        generate_private_key(socket, p, secret_key);
         
         char * ciphertext = NULL;
+        // private_key = 29;
         // char * plaintext = "coucou";
 
         //encrypt(plaintext, &ciphertext, private_key);
         //send_message_client(socket.socket, ciphertext);
 
         // send_message_client(socket.socket, plaintext);
-        free(ciphertext);
+        //free(ciphertext);
 
         // receive_message(socket.socket);
 
         for (;;) {
             printf("Votre message: ");
 
-            char* message = get_message();
+            char* plaintext = get_message();
 
-            if (message == NULL) {
-                free(message);
+            if (plaintext == NULL) {
+                free(plaintext);
                 continue;
             }
-
-            //encrypt(plaintext, &ciphertext, private_key);
-            //send_message_client(socket.socket, ciphertext);
-            send_message_client(socket.socket, message);
+            encrypt(plaintext, &ciphertext, private_key);
+            send_message_client(socket.socket, ciphertext);
+            // send_message_client(socket.socket, message);
             free(ciphertext);
             ciphertext = NULL;
         }

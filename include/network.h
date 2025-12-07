@@ -146,6 +146,6 @@ void send_public_key(Socket socket, uint64_t p, uint64_t g, uint64_t secret_key)
  * @note En cas d'erreur (réception ou conversion), un message est affiché via `LOG_ERROR`.
  *
  */
-uint64_t generate_private_key(Socket socket, uint64_t p, uint64_t secret_key);
+uint64_t generate_private_key(int socket, uint64_t p, uint64_t secret_key);
 
 #endif // C_TALK_NETWORK_H
