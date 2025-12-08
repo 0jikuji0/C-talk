@@ -32,6 +32,7 @@
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
 ThreadPool pool;
+uint64_t private_key;
 
 // --- Routine UDP (Signalement) ---
 void* udp_beacon_thread(void* arg) {
@@ -84,7 +85,7 @@ void* client_handler_thread(void* arg) {
 
     printf("Nouveau client traité sur le thread %lu\n", self->thread_id);
     printf("test\n");
-    uint64_t p, g, secret_key, public_key, private_key;
+    uint64_t p, g, secret_key;
     publicParams(&p, &g);
     privateParams(&secret_key);
     private_key = generate_private_key(sock, p, secret_key);

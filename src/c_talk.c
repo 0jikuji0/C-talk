@@ -5,112 +5,83 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <unistd.h>
 
-int main(int argc, char* argv[]) {
+extern uint64_t private_key;
 
-    if (argc < 2) {
-        printf("Veuillez spécifier le mode du programme ([S]erveur ou [C]lient)");
-        return 0;
+void *server_thread(void *arg)
+{
+    run_server_loop(DEFAULT_LISTENING_PORT);
+    return NULL;
+}
+
+int main()
+{
+    pthread_t server_tid;
+    char value;
+    printf("Server s ou Client c en premier ?\n");
+    scanf(" %c", &value);
+
+    if (value == 's') {
+        printf("[Server] 1\n");
+        if (pthread_create(&server_tid, NULL, server_thread, NULL) != 0)
+        {
+            perror("Erreur création thread serveur");
+            return 1;
+        }
     }
 
-    char value = argv[1][0];
+    scanf(" %c", &value);
 
     if (value == 'c')
     {
+        printf("[Client] 1\n");
         Socket socket = initialize_client(DEFAULT_LISTENING_PORT, DEFAULT_CONNECTION_HOST);
-
-        // génération des clés
-
-        uint64_t p, g, secret_key, public_key, private_key;
+    
+        uint64_t p, g, secret_key, public_key;
         publicParams(&p, &g);
         privateParams(&secret_key);
-
+    
         send_public_key(socket, p, g, secret_key);
+
+        scanf(" %c", &value);
+
+        if (value == 's')
+        {
+            printf("[Server] 2\n");
+            if (pthread_create(&server_tid, NULL, server_thread, NULL) != 0)
+            {
+                perror("Erreur création thread serveur");
+                return 1;
+            }
+        }
         
-        char * ciphertext = NULL;
-        // private_key = 29;
-        // char * plaintext = "coucou";
-
-        //encrypt(plaintext, &ciphertext, private_key);
-        //send_message_client(socket.socket, ciphertext);
-
-        // send_message_client(socket.socket, plaintext);
-        //free(ciphertext);
-
-        // receive_message(socket.socket);
-
-        for (;;) {
+        char *ciphertext = NULL;
+    
+        for (;;)
+        {
+            printf("[Shared Key] %zu\n", private_key);
             printf("Votre message: ");
-
-            char* plaintext = get_message();
-
-            if (plaintext == NULL) {
+    
+            char *plaintext = get_message();
+    
+            if (plaintext == NULL)
+            {
                 free(plaintext);
                 continue;
             }
             encrypt(plaintext, &ciphertext, private_key);
             send_message_client(socket.socket, ciphertext);
-            // send_message_client(socket.socket, message);
+    
             free(ciphertext);
             ciphertext = NULL;
         }
-
+    
         close_socket(socket);
         free_socket(socket);
+        pthread_join(server_tid, NULL);
+        return 0;
     }
-
-    if (value == 's')
-    {
-        /*
-        server_socket sockets = initialize_server(DEFAULT_LISTENING_PORT, DEFAULT_PENDING_QUEUE_MAX_LENGHT);
-
-        char buffer[DEFAULT_BUFFER_SIZE];
-        receive_message_server(sockets.connected_socket_fd, DEFAULT_BUFFER_SIZE, buffer);
-        printf("%s", buffer);
-
-        close_server(sockets);
-         */
-
-        // ServerSocket s_sock = init_server(DEFAULT_LISTENING_PORT);
-
-        size_t p, g, secret_key, public_key, private_key;
-        size_t r;
-        publicParams(&p, &g);
-        privateParams(&secret_key);
-
-        // soit secret_key_c la clé secrète du client et secret_key_s la clé sercrète du serveur
-        // échanger p et g
-        //exchange_primes(s_sock.connection.socket);
-
-        // public_key = échanger le résultat r de (g^secret_key_s) % p
-        r = publicKey(p, g, secret_key);
-
-        // public_key du client
-        //public_key = exchange_public_keys(s_sock.connection.socket, r);
-
-        // (r ^ secret_key_s) % p
-        // private_key = On a donc (g ^ secret_key_c * secret_key_s) % p
-        private_key = privateKey(p, public_key, secret_key);
-
-
-        run_server_loop(DEFAULT_LISTENING_PORT);
-    }
-
 }
-
-
-/*
-
-Server -| Client 1
-
-Client 1 | Client 2 | Client 3
-
-Server -> Client 1 clé
-
-Server -> Client 2 clé
--> Client 1 clé
--> Client 3 clé
-
-Message reçu: houcou
-
-*/
