@@ -162,10 +162,12 @@ void on_get_input_clicked(GtkButton *button, gpointer user_data)
     g_free(message);
 
     int port_;
-    char *ip_;
+    char ip_[16]; 
 
     sscanf(port, "%d", &port_);
-    sscanf(ip, "%s", ip_);
+    strncpy(ip_, ip, sizeof(ip_)-1);
+    ip_[sizeof(ip_)-1] = '\0';
+
 
     printf("[Client] 1\n");
     socket_ = initialize_client(port_, ip_);
