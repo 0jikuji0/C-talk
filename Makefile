@@ -4,8 +4,9 @@
 
 # Compiler and flags
 CC      := gcc
-CFLAGS  := -Werror -std=c99 -I include
-LDFLAGS :=
+CFLAGS  := -Werror -std=c99 -I include $(shell pkg-config --cflags gtk4)
+LDFLAGS := $(shell pkg-config --libs gtk4)
+
 
 # Directories
 SRC_DIR := src
@@ -15,7 +16,7 @@ BUILD_DIR := build
 TARGET := $(BUILD_DIR)/b.out
 
 # Source files
-SRC := $(SRC_DIR)/c_talk.c \
+SRC := $(SRC_DIR)/ui.c \
        $(SRC_DIR)/network.c \
        $(SRC_DIR)/client.c \
        $(SRC_DIR)/server.c \

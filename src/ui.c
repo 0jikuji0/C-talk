@@ -1,5 +1,14 @@
 // gcc $(pkg-config --cflags --libs gtk4) src/ui.c -o ui
 
+#include "../include/client.h"
+#include "../include/server.h"
+#include "../include/crypto.h"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <unistd.h>
 #include <gtk/gtk.h>
 #include <time.h>
 #include <string.h>
@@ -8,23 +17,17 @@ static GtkWidget *main_window = NULL;
 static GtkWidget *text_view = NULL;
 static GtkTextBuffer *text_buffer = NULL;
 static GtkWidget *entry = NULL;
+pthread_t server_tid;
 
 // Structure pour stocker les contacts
-typedef struct
-{
-  char *name;
-  char *last_message;
-  gboolean online;
-} Contact;
 
-// Liste de contacts exemple
-Contact contacts[] = {
-    {"Alice Dupont", "Salut ! Comment vas-tu ?", TRUE},
-    {"Bob Martin", "On se voit demain ?", TRUE},
-    {"Charlie Petit", "Merci pour ton aide !", TRUE},
-    {"Diana Rousseau", "J'ai envoyé le fichier", FALSE},
-    {"Étienne Moreau", "À plus tard", TRUE}
-  };
+extern uint64_t private_key;
+
+void *server_thread(void *arg)
+{
+    run_server_loop(DEFAULT_LISTENING_PORT);
+    return NULL;
+}
 
 char *get_current_time(void)
 {
@@ -112,7 +115,28 @@ void on_about_activate(GSimpleAction *action, GVariant *parameter, gpointer user
 void on_clear_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   gtk_text_buffer_set_text(text_buffer, "", 0);
-  add_message("Système", "Conversation effacée", FALSE);
+  add_message("Systeme", "Conversation effacée", FALSE);
+}
+
+// Fonction pour démarrer le serveur
+void on_start_server_clicked(GtkButton *button, gpointer user_data)
+{
+  // Afficher un message de statut
+  add_message("Serveur", "Démarrage du serveur...", FALSE);
+
+  // Changer le label du bouton
+  gtk_button_set_label(button, "Serveur actif");
+  gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
+
+  printf("[Server] 1\n");
+  if (pthread_create(&server_tid, NULL, server_thread, NULL) != 0)
+  {
+    perror("Erreur création thread serveur");
+    exit(EXIT_FAILURE);
+  }
+  // TODO: Appeler la fonction de démarrage du serveur
+  // start_server();
+  add_message("Serveur", "Bien demarrer", FALSE);
 }
 
 // Actions de l'application
@@ -177,6 +201,12 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menu_button), G_MENU_MODEL(menu));
   gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menu_button);
+
+  // Bouton pour démarrer le serveur
+  GtkWidget *server_button = gtk_button_new_with_label("Démarrer serveur");
+  gtk_widget_add_css_class(server_button, "suggested-action");
+  g_signal_connect(server_button, "clicked", G_CALLBACK(on_start_server_clicked), NULL);
+  gtk_header_bar_pack_start(GTK_HEADER_BAR(header), server_button);
 
   gtk_window_set_titlebar(GTK_WINDOW(main_window), header);
 
