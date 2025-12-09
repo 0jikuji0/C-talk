@@ -31,6 +31,8 @@
 
 #define LOG_ERROR(msg) fprintf(stderr, "[ERROR] (SERVER) %s : %s (code: %d)\n", (msg), strerror(errno), errno); exit(EXIT_FAILURE);
 
+char *last_received_message;
+
 ThreadPool pool;
 uint64_t private_key;
 
@@ -72,7 +74,8 @@ void broadcast_to_other_clients(int socket_fd, const char* message) {
 
     for (int i = 0; i < count; i++) {
         Thread* t = threads[i];
-        if (t->is_active && t->context.socket_fd != socket_fd) {
+        // Envoyer à TOUS les clients, y compris l'émetteur
+        if (t->is_active) {
             send_message_server(t->context.socket_fd, (char*)message);
         }
     }
@@ -84,7 +87,6 @@ void* client_handler_thread(void* arg) {
     int sock = self->context.socket_fd;
 
     printf("Nouveau client traité sur le thread %lu\n", self->thread_id);
-    printf("test\n");
     uint64_t p, g, secret_key;
     publicParams(&p, &g);
     privateParams(&secret_key);
@@ -108,8 +110,10 @@ void* client_handler_thread(void* arg) {
             break;
         }
         printf("[Client %d] : %s\n", sock, decrypted);
+        if (last_received_message) free(last_received_message);
+        last_received_message = decrypted;
 
-        broadcast_to_other_clients(sock, decrypted);
+        // broadcast_to_other_clients(sock, decrypted);
 
         free(decrypted);
         free(ciphertext);

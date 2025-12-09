@@ -22,9 +22,22 @@ static GtkWidget *port_input = NULL;
 pthread_t server_tid;
 
 extern uint64_t private_key;
+extern char *last_received_message;
 
 int has_exechange = 0;
+
+// Forward declaration
+void add_message(const char *username, const char *message, gboolean is_own_message);
 Socket socket_;
+
+gboolean display_received_message(gpointer user_data) {
+    if (last_received_message != NULL) {
+        add_message("Autre", last_received_message, FALSE);
+        free(last_received_message);
+        last_received_message = NULL;
+    }
+    return G_SOURCE_CONTINUE; 
+}
 
 void *server_thread(void *arg)
 {
@@ -41,30 +54,28 @@ char *get_current_time(void)
   return buffer;
 }
 
-void send_message_(char *plaintext)
+void send_message_(const char *plaintext)
 {
-
-  // if (!has_exechange)
-  // {
-  //   uint64_t p, g, secret_key, public_key;
-  //   publicParams(&p, &g);
-  //   privateParams(&secret_key);
-
-  //   send_public_key(socket_, p, g, secret_key);
-  //   has_exechange++;
-  // }
+  if (plaintext == NULL || strlen(plaintext) == 0)
+  {
+    printf("Erreur: message vide\n");
+    return;
+  }
 
   char *ciphertext = NULL;
 
   printf("[Shared Key] %zu\n", private_key);
-  printf("Votre message: ");
-
-  if (plaintext == NULL)
+  printf("Votre message: %s\n", plaintext);
+  
+  encrypt((char *)plaintext, &ciphertext, private_key);
+  if (ciphertext == NULL)
   {
-    free(plaintext);
+    printf("Erreur: chiffrement échoué\n");
+    return;
   }
-  encrypt(plaintext, &ciphertext, private_key);
-  send_message_client(socket_.socket, ciphertext);
+  
+  int result = send_message_client(socket_.socket, ciphertext);
+  printf("Résultat envoi: %d\n", result);
 
   free(ciphertext);
   ciphertext = NULL;
@@ -104,16 +115,22 @@ void on_send_clicked(GtkButton *button, gpointer user_data)
   GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
   const char *text = gtk_entry_buffer_get_text(buffer);
 
-  
-
   if (text != NULL && strlen(text) > 0)
   {
+    // Créer une copie du texte car le pointeur peut être temporaire
+    char *text_copy = g_strdup(text);
     
-    add_message("Vous", text, TRUE);
+    add_message("Vous", text_copy, TRUE);
     gtk_entry_buffer_set_text(buffer, "", 0);
-    char * text_;
-    sscanf(text, "%s", text_);
-    send_message_(text_);
+
+    printf("DEBUG: Envoi du message: '%s'\n", text_copy);
+    send_message_(text_copy);
+    
+    g_free(text_copy);
+  }
+  else
+  {
+    printf("DEBUG: Message vide\n");
   }
 }
 
@@ -288,6 +305,9 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   // === ZONE DE CHAT ===
   GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  g_timeout_add(100, display_received_message, NULL);
+
 
   // === ZONE DE CONFIGURATION (IP/Port) ===
   GtkWidget *config_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
