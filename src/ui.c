@@ -17,16 +17,19 @@ static GtkWidget *main_window = NULL;
 static GtkWidget *text_view = NULL;
 static GtkTextBuffer *text_buffer = NULL;
 static GtkWidget *entry = NULL;
+static GtkWidget *ip_input = NULL;
+static GtkWidget *port_input = NULL;
 pthread_t server_tid;
-
-// Structure pour stocker les contacts
 
 extern uint64_t private_key;
 
+int has_exechange = 0;
+Socket socket;
+
 void *server_thread(void *arg)
 {
-    run_server_loop(DEFAULT_LISTENING_PORT);
-    return NULL;
+  run_server_loop(DEFAULT_LISTENING_PORT);
+  return NULL;
 }
 
 char *get_current_time(void)
@@ -36,6 +39,37 @@ char *get_current_time(void)
   static char buffer[9];
   strftime(buffer, 9, "%H:%M:%S", tm_info);
   return buffer;
+}
+
+void send_message(char *plaintext)
+{
+
+  if (!has_exechange)
+  {
+    uint64_t p, g, secret_key, public_key;
+    publicParams(&p, &g);
+    privateParams(&secret_key);
+
+    send_public_key(socket, p, g, secret_key);
+    has_exechange++;
+  }
+
+  char *ciphertext = NULL;
+
+  printf("[Shared Key] %zu\n", private_key);
+  printf("Votre message: ");
+
+  char *plaintext = get_message();
+
+  if (plaintext == NULL)
+  {
+    free(plaintext);
+  }
+  encrypt(plaintext, &ciphertext, private_key);
+  send_message_client(socket.socket, ciphertext);
+
+  free(ciphertext);
+  ciphertext = NULL;
 }
 
 // Fonction pour ajouter un message dans la zone de discussion
@@ -109,6 +143,42 @@ void on_about_activate(GSimpleAction *action, GVariant *parameter, gpointer user
       "authors", authors,
       "logo-icon-name", "system-users",
       NULL);
+}
+
+// Fonction pour récupérer les valeurs des inputs
+void on_get_input_clicked(GtkButton *button, gpointer user_data)
+{
+  const char *ip = gtk_editable_get_text(GTK_EDITABLE(ip_input));
+  const char *port = gtk_editable_get_text(GTK_EDITABLE(port_input));
+
+  if (ip != NULL && strlen(ip) > 0 && port != NULL && strlen(port) > 0)
+  {
+    char *message = g_strdup_printf("Connexion à %s:%s", ip, port);
+    add_message("Système", message, FALSE);
+    g_free(message);
+
+    int port_;
+    char *ip_;
+
+    sscanf(port, "%d", &port_);
+    sscanf(ip, "%s", ip_);
+
+    printf("[Client] 1\n");
+    Socket socket = initialize_client(port_, ip_);
+    uint64_t p, g, secret_key, public_key;
+    publicParams(&p, &g);
+    privateParams(&secret_key);
+
+    send_public_key(socket, p, g, secret_key);
+
+    // close_socket(socket);
+    // free_socket(socket);
+    // pthread_join(server_tid, NULL);
+  }
+  else
+  {
+    add_message("Erreur", "Veuillez remplir tous les champs", FALSE);
+  }
 }
 
 // Fonction Effacer la conversation
@@ -212,6 +282,44 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   // === ZONE DE CHAT ===
   GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  // === ZONE DE CONFIGURATION (IP/Port) ===
+  GtkWidget *config_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+  gtk_widget_set_margin_top(config_box, 12);
+  gtk_widget_set_margin_bottom(config_box, 12);
+  gtk_widget_set_margin_start(config_box, 12);
+  gtk_widget_set_margin_end(config_box, 12);
+
+  // Label IP
+  GtkWidget *ip_label = gtk_label_new("IP :");
+  gtk_box_append(GTK_BOX(config_box), ip_label);
+
+  // Input IP
+  ip_input = gtk_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(ip_input), "127.0.0.1");
+  gtk_widget_set_hexpand(ip_input, TRUE);
+  gtk_box_append(GTK_BOX(config_box), ip_input);
+
+  // Label Port
+  GtkWidget *port_label = gtk_label_new("Port :");
+  gtk_box_append(GTK_BOX(config_box), port_label);
+
+  // Input Port
+  port_input = gtk_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(port_input), "8080");
+  gtk_widget_set_size_request(port_input, 100, -1);
+  gtk_box_append(GTK_BOX(config_box), port_input);
+
+  // Bouton Connexion
+  GtkWidget *connect_button = gtk_button_new_with_label("Connecter");
+  g_signal_connect(connect_button, "clicked", G_CALLBACK(on_get_input_clicked), NULL);
+  gtk_box_append(GTK_BOX(config_box), connect_button);
+
+  gtk_box_append(GTK_BOX(chat_box), config_box);
+
+  // Séparateur
+  GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_box_append(GTK_BOX(chat_box), sep);
 
   // Zone de texte avec scroll
   GtkWidget *scrolled = gtk_scrolled_window_new();
