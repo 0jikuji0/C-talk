@@ -24,7 +24,7 @@ pthread_t server_tid;
 extern uint64_t private_key;
 
 int has_exechange = 0;
-Socket socket;
+Socket socket_;
 
 void *server_thread(void *arg)
 {
@@ -41,32 +41,30 @@ char *get_current_time(void)
   return buffer;
 }
 
-void send_message(char *plaintext)
+void send_message_(char *plaintext)
 {
 
-  if (!has_exechange)
-  {
-    uint64_t p, g, secret_key, public_key;
-    publicParams(&p, &g);
-    privateParams(&secret_key);
+  // if (!has_exechange)
+  // {
+  //   uint64_t p, g, secret_key, public_key;
+  //   publicParams(&p, &g);
+  //   privateParams(&secret_key);
 
-    send_public_key(socket, p, g, secret_key);
-    has_exechange++;
-  }
+  //   send_public_key(socket_, p, g, secret_key);
+  //   has_exechange++;
+  // }
 
   char *ciphertext = NULL;
 
   printf("[Shared Key] %zu\n", private_key);
   printf("Votre message: ");
 
-  char *plaintext = get_message();
-
   if (plaintext == NULL)
   {
     free(plaintext);
   }
   encrypt(plaintext, &ciphertext, private_key);
-  send_message_client(socket.socket, ciphertext);
+  send_message_client(socket_.socket, ciphertext);
 
   free(ciphertext);
   ciphertext = NULL;
@@ -106,10 +104,16 @@ void on_send_clicked(GtkButton *button, gpointer user_data)
   GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
   const char *text = gtk_entry_buffer_get_text(buffer);
 
+  
+
   if (text != NULL && strlen(text) > 0)
   {
+    
     add_message("Vous", text, TRUE);
     gtk_entry_buffer_set_text(buffer, "", 0);
+    char * text_;
+    sscanf(text, "%s", text_);
+    send_message_(text_);
   }
 }
 
@@ -164,12 +168,12 @@ void on_get_input_clicked(GtkButton *button, gpointer user_data)
     sscanf(ip, "%s", ip_);
 
     printf("[Client] 1\n");
-    Socket socket = initialize_client(port_, ip_);
+    socket_ = initialize_client(port_, ip_);
     uint64_t p, g, secret_key, public_key;
     publicParams(&p, &g);
     privateParams(&secret_key);
 
-    send_public_key(socket, p, g, secret_key);
+    send_public_key(socket_, p, g, secret_key);
 
     // close_socket(socket);
     // free_socket(socket);
