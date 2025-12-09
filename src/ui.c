@@ -8,11 +8,6 @@ static GtkWidget *main_window = NULL;
 static GtkWidget *text_view = NULL;
 static GtkTextBuffer *text_buffer = NULL;
 static GtkWidget *entry = NULL;
-static GtkWidget *sidebar = NULL;
-static GtkWidget *sidebar_revealer = NULL;
-static GtkWidget *conversations_list = NULL;
-static GtkWidget *search_entry = NULL;
-static char *current_contact = NULL;
 
 // Structure pour stocker les contacts
 typedef struct
@@ -28,7 +23,8 @@ Contact contacts[] = {
     {"Bob Martin", "On se voit demain ?", TRUE},
     {"Charlie Petit", "Merci pour ton aide !", TRUE},
     {"Diana Rousseau", "J'ai envoyé le fichier", FALSE},
-    {"Étienne Moreau", "À plus tard", TRUE}};
+    {"Étienne Moreau", "À plus tard", TRUE}
+  };
 
 char *get_current_time(void)
 {
@@ -84,103 +80,6 @@ void on_send_clicked(GtkButton *button, gpointer user_data)
 void on_entry_activate(GtkEntry *entry_widget, gpointer user_data)
 {
   on_send_clicked(NULL, user_data);
-}
-
-// Fonction pour changer de conversation
-void on_contact_selected(GtkListBox *box, GtkListBoxRow *row, gpointer user_data)
-{
-  if (row == NULL)
-    return;
-
-  int index = gtk_list_box_row_get_index(row);
-  if (index >= 0 && index < G_N_ELEMENTS(contacts))
-  {
-    if (current_contact)
-      g_free(current_contact);
-    current_contact = g_strdup(contacts[index].name);
-
-    // Effacer et charger la nouvelle conversation
-    gtk_text_buffer_set_text(text_buffer, "", 0);
-    char *welcome = g_strdup_printf("Conversation avec %s", current_contact);
-    add_message("Système", welcome, FALSE);
-    g_free(welcome);
-
-    // Mettre à jour le titre
-    GtkWidget *header = gtk_window_get_titlebar(GTK_WINDOW(main_window));
-    GtkWidget *title_widget = gtk_header_bar_get_title_widget(GTK_HEADER_BAR(header));
-    char *title = g_strdup_printf("💬 %s", current_contact);
-    gtk_label_set_text(GTK_LABEL(title_widget), title);
-    g_free(title);
-  }
-}
-
-// Créer une ligne de contact
-GtkWidget *create_contact_row(Contact *contact)
-{
-  GtkWidget *row_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-  gtk_widget_set_margin_top(row_box, 8);
-  gtk_widget_set_margin_bottom(row_box, 8);
-  gtk_widget_set_margin_start(row_box, 12);
-  gtk_widget_set_margin_end(row_box, 12);
-
-  // Indicateur en ligne (point vert/gris)
-  GtkWidget *status = gtk_label_new(contact->online ? "🟢" : "⚫");
-  gtk_box_append(GTK_BOX(row_box), status);
-
-  // Infos du contact
-  GtkWidget *info_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
-  gtk_widget_set_hexpand(info_box, TRUE);
-
-  GtkWidget *name_label = gtk_label_new(contact->name);
-  gtk_widget_add_css_class(name_label, "heading");
-  gtk_label_set_xalign(GTK_LABEL(name_label), 0);
-  gtk_box_append(GTK_BOX(info_box), name_label);
-
-  GtkWidget *msg_label = gtk_label_new(contact->last_message);
-  gtk_label_set_xalign(GTK_LABEL(msg_label), 0);
-  gtk_label_set_ellipsize(GTK_LABEL(msg_label), PANGO_ELLIPSIZE_END);
-  gtk_widget_add_css_class(msg_label, "dim-label");
-  gtk_widget_add_css_class(msg_label, "caption");
-  gtk_box_append(GTK_BOX(info_box), msg_label);
-
-  gtk_box_append(GTK_BOX(row_box), info_box);
-
-  return row_box;
-}
-
-// Filtrer la liste des contacts
-gboolean filter_contacts(GtkListBoxRow *row, gpointer user_data)
-{
-  const char *search_text = gtk_editable_get_text(GTK_EDITABLE(search_entry));
-
-  if (search_text == NULL || strlen(search_text) == 0)
-    return TRUE;
-
-  int index = gtk_list_box_row_get_index(row);
-  if (index >= 0 && index < G_N_ELEMENTS(contacts))
-  {
-    char *name_lower = g_utf8_strdown(contacts[index].name, -1);
-    char *search_lower = g_utf8_strdown(search_text, -1);
-    gboolean match = strstr(name_lower, search_lower) != NULL;
-    g_free(name_lower);
-    g_free(search_lower);
-    return match;
-  }
-
-  return FALSE;
-}
-
-// Callback pour la recherche
-void on_search_changed(GtkSearchEntry *entry, gpointer user_data)
-{
-  gtk_list_box_invalidate_filter(GTK_LIST_BOX(conversations_list));
-}
-
-// Toggle sidebar
-void on_sidebar_toggle(GtkButton *button, gpointer user_data)
-{
-  gboolean revealed = gtk_revealer_get_reveal_child(GTK_REVEALER(sidebar_revealer));
-  gtk_revealer_set_reveal_child(GTK_REVEALER(sidebar_revealer), !revealed);
 }
 
 // Fonction Quitter
@@ -256,11 +155,6 @@ void on_activate(GtkApplication *app, gpointer user_data)
   GtkWidget *header = gtk_header_bar_new();
   gtk_header_bar_set_show_title_buttons(GTK_HEADER_BAR(header), TRUE);
 
-  // Bouton pour afficher/masquer la sidebar (3 barres)
-  GtkWidget *sidebar_button = gtk_button_new_from_icon_name("open-menu-symbolic");
-  g_signal_connect(sidebar_button, "clicked", G_CALLBACK(on_sidebar_toggle), NULL);
-  gtk_header_bar_pack_start(GTK_HEADER_BAR(header), sidebar_button);
-
   // Titre de la HeaderBar
   GtkWidget *title_label = gtk_label_new("Chat");
   gtk_widget_add_css_class(title_label, "title");
@@ -285,61 +179,6 @@ void on_activate(GtkApplication *app, gpointer user_data)
   gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menu_button);
 
   gtk_window_set_titlebar(GTK_WINDOW(main_window), header);
-
-  // Conteneur principal horizontal (sidebar + chat)
-  GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-
-  // === SIDEBAR ===
-  sidebar_revealer = gtk_revealer_new();
-  gtk_revealer_set_transition_type(GTK_REVEALER(sidebar_revealer),
-                                   GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT);
-  gtk_revealer_set_reveal_child(GTK_REVEALER(sidebar_revealer), TRUE);
-
-  sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_size_request(sidebar, 10, 0);
-
-  // Barre de recherche
-  GtkWidget *search_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_margin_top(search_box, 12);
-  gtk_widget_set_margin_bottom(search_box, 6);
-  gtk_widget_set_margin_start(search_box, 12);
-  gtk_widget_set_margin_end(search_box, 12);
-
-  search_entry = gtk_search_entry_new();
-  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(search_entry), "Rechercher une personne...");
-  g_signal_connect(search_entry, "search-changed", G_CALLBACK(on_search_changed), NULL);
-  gtk_box_append(GTK_BOX(search_box), search_entry);
-  gtk_box_append(GTK_BOX(sidebar), search_box);
-
-  // Séparateur
-  GtkWidget *sep1 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_box_append(GTK_BOX(sidebar), sep1);
-
-  // Liste des conversations
-  GtkWidget *scrolled_sidebar = gtk_scrolled_window_new();
-  gtk_widget_set_vexpand(scrolled_sidebar, TRUE);
-
-  conversations_list = gtk_list_box_new();
-  gtk_list_box_set_selection_mode(GTK_LIST_BOX(conversations_list), GTK_SELECTION_SINGLE);
-  gtk_list_box_set_filter_func(GTK_LIST_BOX(conversations_list),
-                               filter_contacts, NULL, NULL);
-  g_signal_connect(conversations_list, "row-activated",
-                   G_CALLBACK(on_contact_selected), NULL);
-
-  // Ajouter les contacts
-  for (int i = 0; i < G_N_ELEMENTS(contacts); i++)
-  {
-    GtkWidget *row_content = create_contact_row(&contacts[i]);
-    gtk_list_box_append(GTK_LIST_BOX(conversations_list), row_content);
-  }
-
-  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_sidebar), conversations_list);
-  gtk_box_append(GTK_BOX(sidebar), scrolled_sidebar);
-
-  gtk_revealer_set_child(GTK_REVEALER(sidebar_revealer), sidebar);
-  gtk_paned_set_start_child(GTK_PANED(paned), sidebar_revealer);
-  gtk_paned_set_shrink_start_child(GTK_PANED(paned), TRUE);
-  gtk_paned_set_shrink_end_child(GTK_PANED(paned), FALSE);
 
   // === ZONE DE CHAT ===
   GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -387,13 +226,10 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   gtk_box_append(GTK_BOX(chat_box), input_box);
 
-  gtk_paned_set_end_child(GTK_PANED(paned), chat_box);
-  gtk_paned_set_resize_end_child(GTK_PANED(paned), TRUE);
-
-  gtk_window_set_child(GTK_WINDOW(main_window), paned);
+  gtk_window_set_child(GTK_WINDOW(main_window), chat_box);
 
   // Message de bienvenue
-  add_message("Système", "Bienvenue dans le chat ! Sélectionnez un contact ou recherchez une personne.", FALSE);
+  add_message("Système", "Bienvenue dans le chat !", FALSE);
 
   gtk_window_present(GTK_WINDOW(main_window));
 }
