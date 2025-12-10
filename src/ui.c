@@ -30,13 +30,16 @@ int has_exechange = 0;
 void add_message(const char *username, const char *message, gboolean is_own_message);
 Socket socket_;
 
-gboolean display_received_message(gpointer user_data) {
-    if (last_received_message != NULL) {
-        add_message("Autre", last_received_message, FALSE);
-        free(last_received_message);
-        last_received_message = NULL;
-    }
-    return G_SOURCE_CONTINUE; 
+gboolean display_received_message(gpointer user_data)
+{
+  if (last_received_message != NULL)
+  {
+    sleep(1);
+    add_message("Autre", last_received_message, FALSE);
+    free(last_received_message);
+    last_received_message = NULL;
+  }
+  return G_SOURCE_CONTINUE;
 }
 
 void *server_thread(void *arg)
@@ -66,14 +69,14 @@ void send_message_(const char *plaintext)
 
   printf("[Shared Key] %zu\n", private_key);
   printf("Votre message: %s\n", plaintext);
-  
+
   encrypt((char *)plaintext, &ciphertext, private_key);
   if (ciphertext == NULL)
   {
     printf("Erreur: chiffrement échoué\n");
     return;
   }
-  
+
   int result = send_message_client(socket_.socket, ciphertext);
   printf("Résultat envoi: %d\n", result);
 
@@ -119,13 +122,13 @@ void on_send_clicked(GtkButton *button, gpointer user_data)
   {
     // Créer une copie du texte car le pointeur peut être temporaire
     char *text_copy = g_strdup(text);
-    
+
     add_message("Vous", text_copy, TRUE);
     gtk_entry_buffer_set_text(buffer, "", 0);
 
     printf("DEBUG: Envoi du message: '%s'\n", text_copy);
     send_message_(text_copy);
-    
+
     g_free(text_copy);
   }
   else
@@ -179,12 +182,11 @@ void on_get_input_clicked(GtkButton *button, gpointer user_data)
     g_free(message);
 
     int port_;
-    char ip_[16]; 
+    char ip_[16];
 
     sscanf(port, "%d", &port_);
-    strncpy(ip_, ip, sizeof(ip_)-1);
-    ip_[sizeof(ip_)-1] = '\0';
-
+    strncpy(ip_, ip, sizeof(ip_) - 1);
+    ip_[sizeof(ip_) - 1] = '\0';
 
     printf("[Client] 1\n");
     socket_ = initialize_client(port_, ip_);
@@ -307,7 +309,6 @@ void on_activate(GtkApplication *app, gpointer user_data)
   GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   g_timeout_add(100, display_received_message, NULL);
-
 
   // === ZONE DE CONFIGURATION (IP/Port) ===
   GtkWidget *config_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);

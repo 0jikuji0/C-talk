@@ -110,8 +110,12 @@ void* client_handler_thread(void* arg) {
             break;
         }
         printf("[Client %d] : %s\n", sock, decrypted);
+
         if (last_received_message) free(last_received_message);
-        last_received_message = decrypted;
+        last_received_message = malloc(strlen(decrypted) + 1);
+        if (last_received_message != NULL) {
+            strcpy(last_received_message, decrypted);
+        }
 
         // broadcast_to_other_clients(sock, decrypted);
 
