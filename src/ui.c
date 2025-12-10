@@ -1,17 +1,17 @@
 // gcc $(pkg-config --cflags --libs gtk4) src/ui.c -o ui
 
 #include "../include/client.h"
-#include "../include/server.h"
 #include "../include/crypto.h"
+#include "../include/server.h"
+#include <gtk/gtk.h>
+#include <pthread.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <gtk/gtk.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 static GtkWidget *main_window = NULL;
 static GtkWidget *text_view = NULL;
@@ -24,16 +24,13 @@ pthread_t server_tid;
 extern uint64_t private_key;
 extern char *last_received_message;
 
-int has_exechange = 0;
-
 // Forward declaration
-void add_message(const char *username, const char *message, gboolean is_own_message);
+void add_message(const char *username, const char *message,
+                 gboolean is_own_message);
 Socket socket_;
 
-gboolean display_received_message(gpointer user_data)
-{
-  if (last_received_message != NULL)
-  {
+gboolean display_received_message(gpointer user_data) {
+  if (last_received_message != NULL) {
     sleep(1);
     add_message("Autre", last_received_message, FALSE);
     free(last_received_message);
@@ -42,14 +39,12 @@ gboolean display_received_message(gpointer user_data)
   return G_SOURCE_CONTINUE;
 }
 
-void *server_thread(void *arg)
-{
-  run_server_loop(DEFAULT_LISTENING_PORT);
+void *server_thread(void *arg) {
+  run_server_loop(*((uint16_t*)arg));
   return NULL;
 }
 
-char *get_current_time(void)
-{
+char *get_current_time(void) {
   time_t now = time(NULL);
   struct tm *tm_info = localtime(&now);
   static char buffer[9];
@@ -57,10 +52,8 @@ char *get_current_time(void)
   return buffer;
 }
 
-void send_message_(const char *plaintext)
-{
-  if (plaintext == NULL || strlen(plaintext) == 0)
-  {
+void send_message_(const char *plaintext) {
+  if (plaintext == NULL || strlen(plaintext) == 0) {
     printf("Erreur: message vide\n");
     return;
   }
@@ -71,8 +64,7 @@ void send_message_(const char *plaintext)
   printf("Votre message: %s\n", plaintext);
 
   encrypt((char *)plaintext, &ciphertext, private_key);
-  if (ciphertext == NULL)
-  {
+  if (ciphertext == NULL) {
     printf("Erreur: chiffrement échoué\n");
     return;
   }
@@ -85,19 +77,21 @@ void send_message_(const char *plaintext)
 }
 
 // Fonction pour ajouter un message dans la zone de discussion
-void add_message(const char *username, const char *message, gboolean is_own_message)
-{
+void add_message(const char *username, const char *message,
+                 gboolean is_own_message) {
   GtkTextIter iter;
   gtk_text_buffer_get_end_iter(text_buffer, &iter);
 
   char *time_str = get_current_time();
-  char *formatted = g_strdup_printf("[%s] %s: %s\n", time_str, username, message);
+  char *formatted =
+      g_strdup_printf("[%s] %s: %s\n", time_str, username, message);
 
   gtk_text_buffer_insert(text_buffer, &iter, formatted, -1);
 
   // Appliquer le tag de couleur
   GtkTextIter start;
-  gtk_text_buffer_get_iter_at_line(text_buffer, &start, gtk_text_buffer_get_line_count(text_buffer) - 2);
+  gtk_text_buffer_get_iter_at_line(
+      text_buffer, &start, gtk_text_buffer_get_line_count(text_buffer) - 2);
   gtk_text_buffer_get_end_iter(text_buffer, &iter);
 
   if (is_own_message)
@@ -109,17 +103,16 @@ void add_message(const char *username, const char *message, gboolean is_own_mess
 
   // Scroll auto vers le bas
   GtkTextMark *mark = gtk_text_buffer_get_insert(text_buffer);
-  gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(text_view), mark, 0.0, TRUE, 0.0, 1.0);
+  gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(text_view), mark, 0.0, TRUE, 0.0,
+                               1.0);
 }
 
 // Fonction appelée quand on envoie un message
-void on_send_clicked(GtkButton *button, gpointer user_data)
-{
+void on_send_clicked(GtkButton *button, gpointer user_data) {
   GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
   const char *text = gtk_entry_buffer_get_text(buffer);
 
-  if (text != NULL && strlen(text) > 0)
-  {
+  if (text != NULL && strlen(text) > 0) {
     // Créer une copie du texte car le pointeur peut être temporaire
     char *text_copy = g_strdup(text);
 
@@ -130,53 +123,40 @@ void on_send_clicked(GtkButton *button, gpointer user_data)
     send_message_(text_copy);
 
     g_free(text_copy);
-  }
-  else
-  {
+  } else {
     printf("DEBUG: Message vide\n");
   }
 }
 
 // Fonction appelée quand on appuie sur Entrée
-void on_entry_activate(GtkEntry *entry_widget, gpointer user_data)
-{
+void on_entry_activate(GtkEntry *entry_widget, gpointer user_data) {
   on_send_clicked(NULL, user_data);
 }
 
 // Fonction Quitter
-void on_quit_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
+void on_quit_activate(GSimpleAction *action, GVariant *parameter,
+                      gpointer user_data) {
   GtkApplication *app = GTK_APPLICATION(user_data);
   g_application_quit(G_APPLICATION(app));
 }
 
 // Fonction À propos
-void on_about_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
-  const char *authors[] = {
-      "jikuji",
-      "FortyTwo_dev",
-      "Jensen",
-      NULL};
+void on_about_activate(GSimpleAction *action, GVariant *parameter,
+                       gpointer user_data) {
+  const char *authors[] = {"jikuji", "FortyTwo_dev", "Jensen", NULL};
 
-  gtk_show_about_dialog(
-      main_window ? GTK_WINDOW(main_window) : NULL,
-      "program-name", "C-Talk",
-      "version", "1.0.0",
-      "comments", "Application de discussion",
-      "authors", authors,
-      "logo-icon-name", "system-users",
-      NULL);
+  gtk_show_about_dialog(main_window ? GTK_WINDOW(main_window) : NULL,
+                        "program-name", "C-Talk", "version", "1.0.0",
+                        "comments", "Application de discussion", "authors",
+                        authors, "logo-icon-name", "system-users", NULL);
 }
 
 // Fonction pour récupérer les valeurs des inputs
-void on_get_input_clicked(GtkButton *button, gpointer user_data)
-{
+void on_get_input_clicked(GtkButton *button, gpointer user_data) {
   const char *ip = gtk_editable_get_text(GTK_EDITABLE(ip_input));
   const char *port = gtk_editable_get_text(GTK_EDITABLE(port_input));
 
-  if (ip != NULL && strlen(ip) > 0 && port != NULL && strlen(port) > 0)
-  {
+  if (ip != NULL && strlen(ip) > 0 && port != NULL && strlen(port) > 0) {
     char *message = g_strdup_printf("Connexion à %s:%s", ip, port);
     add_message("Système", message, FALSE);
     g_free(message);
@@ -199,23 +179,26 @@ void on_get_input_clicked(GtkButton *button, gpointer user_data)
     // close_socket(socket);
     // free_socket(socket);
     // pthread_join(server_tid, NULL);
-  }
-  else
-  {
+  } else {
     add_message("Erreur", "Veuillez remplir tous les champs", FALSE);
   }
 }
 
 // Fonction Effacer la conversation
-void on_clear_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
+void on_clear_activate(GSimpleAction *action, GVariant *parameter,
+                       gpointer user_data) {
   gtk_text_buffer_set_text(text_buffer, "", 0);
   add_message("Systeme", "Conversation effacée", FALSE);
 }
 
 // Fonction pour démarrer le serveur
-void on_start_server_clicked(GtkButton *button, gpointer user_data)
-{
+void on_start_server_clicked(GtkButton *button, gpointer user_data) {
+  const char *port = gtk_editable_get_text(GTK_EDITABLE(port_input));
+  uint16_t port_server = DEFAULT_LISTENING_PORT;
+
+  if (port != NULL && strlen(port) > 0) {
+    sscanf(port, "%d", &port_server);
+  }
   // Afficher un message de statut
   add_message("Serveur", "Démarrage du serveur...", FALSE);
 
@@ -224,45 +207,43 @@ void on_start_server_clicked(GtkButton *button, gpointer user_data)
   gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
 
   printf("[Server] 1\n");
-  if (pthread_create(&server_tid, NULL, server_thread, NULL) != 0)
-  {
+  printf("port serveur: %hu", port_server);
+  if (pthread_create(&server_tid, NULL, server_thread, &port_server) != 0) {
     perror("Erreur création thread serveur");
     exit(EXIT_FAILURE);
   }
   // TODO: Appeler la fonction de démarrage du serveur
   // start_server();
-  add_message("Serveur", "Bien demarrer", FALSE);
+  char msg[] = "Bien demarré sur le port ";
+  char port_str[6];
+  snprintf(port_str, sizeof(port_str), "%hu", port_server);
+  strcat(msg, port_str);
+
+  add_message("Serveur", msg, FALSE);
 }
 
 // Actions de l'application
-GActionEntry app_actions[] = {
-    {"about", on_about_activate},
-    {"clear", on_clear_activate},
-    {"quit", on_quit_activate}};
+GActionEntry app_actions[] = {{"about", on_about_activate},
+                              {"clear", on_clear_activate},
+                              {"quit", on_quit_activate}};
 
 // Fonction de démarrage
-void on_startup(GtkApplication *app, gpointer user_data)
-{
+void on_startup(GtkApplication *app, gpointer user_data) {
   const char *quit_accels[2] = {"<Ctrl>Q", NULL};
   gtk_application_set_accels_for_action(app, "app.quit", quit_accels);
 }
 
 // Créer les tags pour le formatage du texte
-void create_text_tags(void)
-{
-  gtk_text_buffer_create_tag(text_buffer, "own",
-                             "foreground", "#2196F3",
-                             "weight", PANGO_WEIGHT_BOLD,
-                             NULL);
+void create_text_tags(void) {
+  gtk_text_buffer_create_tag(text_buffer, "own", "foreground", "#2196F3",
+                             "weight", PANGO_WEIGHT_BOLD, NULL);
 
-  gtk_text_buffer_create_tag(text_buffer, "other",
-                             "foreground", "#4CAF50",
+  gtk_text_buffer_create_tag(text_buffer, "other", "foreground", "#4CAF50",
                              NULL);
 }
 
 // Fonction d'activation (création de l'interface)
-void on_activate(GtkApplication *app, gpointer user_data)
-{
+void on_activate(GtkApplication *app, gpointer user_data) {
   g_action_map_add_action_entries(G_ACTION_MAP(app), app_actions,
                                   G_N_ELEMENTS(app_actions), app);
 
@@ -281,7 +262,8 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   // Bouton menu
   GtkWidget *menu_button = gtk_menu_button_new();
-  gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(menu_button), "view-more-symbolic");
+  gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(menu_button),
+                                "view-more-symbolic");
 
   // Créer le menu
   GMenu *menu = g_menu_new();
@@ -294,13 +276,15 @@ void on_activate(GtkApplication *app, gpointer user_data)
   g_menu_append(section2, "Quitter", "app.quit");
   g_menu_append_section(menu, NULL, G_MENU_MODEL(section2));
 
-  gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menu_button), G_MENU_MODEL(menu));
+  gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menu_button),
+                                 G_MENU_MODEL(menu));
   gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menu_button);
 
   // Bouton pour démarrer le serveur
   GtkWidget *server_button = gtk_button_new_with_label("Démarrer serveur");
   gtk_widget_add_css_class(server_button, "suggested-action");
-  g_signal_connect(server_button, "clicked", G_CALLBACK(on_start_server_clicked), NULL);
+  g_signal_connect(server_button, "clicked",
+                   G_CALLBACK(on_start_server_clicked), NULL);
   gtk_header_bar_pack_start(GTK_HEADER_BAR(header), server_button);
 
   gtk_window_set_titlebar(GTK_WINDOW(main_window), header);
@@ -339,7 +323,8 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   // Bouton Connexion
   GtkWidget *connect_button = gtk_button_new_with_label("Connecter");
-  g_signal_connect(connect_button, "clicked", G_CALLBACK(on_get_input_clicked), NULL);
+  g_signal_connect(connect_button, "clicked", G_CALLBACK(on_get_input_clicked),
+                   NULL);
   gtk_box_append(GTK_BOX(config_box), connect_button);
 
   gtk_box_append(GTK_BOX(chat_box), config_box);
@@ -399,8 +384,7 @@ void on_activate(GtkApplication *app, gpointer user_data)
   gtk_window_present(GTK_WINDOW(main_window));
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   GtkApplication *app;
   int status;
 
