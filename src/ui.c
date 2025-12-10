@@ -333,7 +333,7 @@ void on_activate(GtkApplication *app, gpointer user_data)
 
   // Input Port
   port_input = gtk_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(port_input), "8080");
+  gtk_entry_set_placeholder_text(GTK_ENTRY(port_input), "31026");
   gtk_widget_set_size_request(port_input, 100, -1);
   gtk_box_append(GTK_BOX(config_box), port_input);
 
